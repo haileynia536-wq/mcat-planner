@@ -1,0 +1,1957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCAT Study Planner</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#f1f5f9;min-height:100vh}
+.topbar{background:linear-gradient(135deg,#1e1b4b,#4338ca);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px}
+.topbar-left h1{font-size:20px;font-weight:900;letter-spacing:-.5px}
+.nav-tabs{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.nav-btn{padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:.2s}
+.nav-btn.active{background:#fff;color:#312e81}
+.nav-btn:not(.active){background:rgba(255,255,255,.15);color:#fff}
+.topbar-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.countdown-box{background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.3);border-radius:12px;padding:10px 16px;text-align:center;min-width:130px}
+.cd-num{font-size:28px;font-weight:900;line-height:1}
+.cd-label{font-size:10px;color:#a5b4fc;margin-top:2px;letter-spacing:.5px}
+.topbar-btns{display:flex;gap:6px}
+.tb-btn{background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700}
+.tb-btn:hover{background:rgba(255,255,255,.25)}
+.legend{display:flex;flex-wrap:wrap;gap:6px;padding:10px 16px;background:#fff;border-bottom:1px solid #e2e8f0;align-items:center}
+.leg{display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:600;border:1.5px solid}
+.sync-bar{background:#f0fdf4;border-bottom:1px solid #bbf7d0;padding:6px 16px;font-size:11px;color:#15803d;font-weight:600;display:flex;align-items:center;gap:8px}
+.sync-bar.error{background:#fef2f2;border-color:#fecaca;color:#dc2626}
+.sync-bar.syncing{background:#fffbeb;border-color:#fcd34d;color:#92400e}
+.view{display:none;padding:14px 12px;max-width:1200px;margin:0 auto}
+.view.active{display:block}
+/* MONTH */
+.month-nav{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.month-nav h2{font-size:18px;font-weight:800;color:#1e1b4b}
+.mnav-btn{background:#6366f1;color:#fff;border:none;border-radius:8px;padding:5px 12px;cursor:pointer;font-weight:700;font-size:13px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-header{text-align:center;font-size:11px;font-weight:700;color:#64748b;padding:6px 0}
+.cal-day{background:#fff;border-radius:8px;padding:6px;min-height:90px;border:1.5px solid #e2e8f0;cursor:pointer;transition:box-shadow .15s,border-color .15s;position:relative;overflow:hidden}
+.cal-day:hover{box-shadow:0 4px 14px rgba(0,0,0,.13);border-color:#a5b4fc}
+.cal-day.empty{background:transparent;border:none;cursor:default}
+.cal-day.today{border-color:#6366f1!important;box-shadow:0 0 0 2px #c7d2fe}
+.cal-day.out-of-range{opacity:.35;cursor:pointer}
+.day-num{font-size:11px;font-weight:700;color:#64748b;margin-bottom:3px}
+.m-cat-tag{display:flex;align-items:center;gap:4px;margin-bottom:2px}
+.m-cat-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.m-cat-name{font-size:9px;font-weight:700}
+.done-badge{position:absolute;top:4px;right:5px;font-size:9px;background:#dcfce7;color:#15803d;border-radius:4px;padding:1px 4px;font-weight:700}
+.today-badge{font-size:8px;background:#6366f1;color:#fff;border-radius:3px;padding:1px 4px;margin-left:3px;vertical-align:middle}
+.edit-hint{position:absolute;bottom:3px;right:4px;font-size:9px;color:#c7d2fe;opacity:0;transition:opacity .2s}
+.cal-day:hover .edit-hint{opacity:1}
+/* WEEK */
+.week-nav{display:flex;align-items:center;gap:12px;margin-bottom:4px;flex-wrap:wrap}
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.week-card{background:#fff;border-radius:12px;padding:11px;border:2px solid #e2e8f0;cursor:pointer;min-height:160px;transition:box-shadow .15s,border-color .15s}
+.week-card:hover{box-shadow:0 6px 20px rgba(0,0,0,.1);border-color:#a5b4fc}
+.week-day-name{font-size:10px;font-weight:700;color:#64748b}
+.week-date{font-size:13px;font-weight:800;color:#1e1b4b;margin-bottom:7px}
+.wk-group{margin-bottom:7px}
+.wk-group-header{display:flex;align-items:center;gap:5px;margin-bottom:3px}
+.wk-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.wk-cat-label{font-size:10px;font-weight:800}
+.wk-subtask{display:flex;align-items:flex-start;gap:4px;padding-left:12px;margin-bottom:2px}
+.wk-subtask-text{font-size:9px;color:#374151;line-height:1.35;flex:1}
+.wk-subtask-text.done-text{text-decoration:line-through;color:#9ca3af}
+.wk-src{font-size:8px;color:#9ca3af}
+.wk-status-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:2px}
+/* DAILY */
+.day-select-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.day-detail{background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.07)}
+.dv-group{border-radius:10px;padding:12px 14px;margin-bottom:10px;border-left:4px solid}
+.dv-group-header{font-size:13px;font-weight:800;margin-bottom:8px}
+.dv-subtask-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.05)}
+.dv-subtask-row:last-child{border-bottom:none}
+.dv-subtask-text{font-size:12px;color:#374151;flex:1;line-height:1.4}
+.dv-subtask-text.done-text{text-decoration:line-through;color:#9ca3af}
+.dv-src-badge{font-size:9px;color:#9ca3af;background:#f8fafc;border:1px solid #e2e8f0;border-radius:5px;padding:1px 6px;white-space:nowrap}
+.dv-status-sel{font-size:10px;padding:2px 6px;border-radius:6px;border:1.5px solid #e2e8f0;background:#fff;cursor:pointer;outline:none;font-family:inherit}
+.st-started{background:#fef9c3;color:#854d0e;border-color:#fde047}
+.st-inprogress{background:#dbeafe;color:#1d4ed8;border-color:#93c5fd}
+.st-done{background:#dcfce7;color:#15803d;border-color:#86efac}
+/* PROGRESS */
+.prog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin-bottom:18px}
+.prog-card{background:#fff;border-radius:12px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.prog-bar-bg{height:9px;border-radius:8px;background:#e2e8f0;overflow:hidden;margin-bottom:3px}
+.prog-bar-fill{height:100%;border-radius:8px;transition:width .5s}
+.big-prog{background:#fff;border-radius:14px;padding:20px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.big-bar-bg{height:16px;border-radius:10px;background:#e0e7ff;overflow:hidden;margin:8px 0}
+.big-bar-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,#818cf8,#312e81);transition:width .5s}
+/* WEAKNESS */
+.weak-section{background:#fff;border-radius:14px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:14px}
+.weak-section h3{font-size:16px;font-weight:800;color:#1e1b4b;margin-bottom:10px}
+.weak-form{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;align-items:flex-end}
+.weak-form input,.weak-form select{padding:7px 10px;border-radius:8px;border:1.5px solid #e2e8f0;font-size:12px;font-family:inherit;outline:none}
+.weak-form input:focus,.weak-form select:focus{border-color:#6366f1}
+.weak-form input{flex:1;min-width:130px}
+.add-btn{background:#6366f1;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-weight:700;font-size:12px;cursor:pointer}
+.data-table{width:100%;border-collapse:collapse;font-size:12px}
+.data-table th{text-align:left;padding:8px 10px;background:#f8fafc;font-size:10px;font-weight:700;color:#64748b;border-bottom:2px solid #e2e8f0;white-space:nowrap}
+.data-table td{padding:8px 10px;border-bottom:1px solid #f1f5f9;color:#374151;vertical-align:top}
+.data-table tr:hover td{background:#fafafa}
+.sev-badge{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;border:1px solid}
+.sev-h{color:#be185d;background:#fdf2f8;border-color:#f9a8d4}
+.sev-m{color:#d97706;background:#fffbeb;border-color:#fcd34d}
+.sev-l{color:#16a34a;background:#f0fdf4;border-color:#bbf7d0}
+.del-btn{background:none;border:none;color:#ef4444;cursor:pointer;font-size:13px;padding:0}
+.oc-action-btn{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border-radius:7px;border:1px solid;cursor:pointer;font-family:inherit;font-size:15px;font-weight:800;line-height:1;vertical-align:middle;transition:background .15s,transform .15s}
+.oc-action-btn:hover{transform:translateY(-1px)}
+.oc-edit-icon{background:#eef2ff;border-color:#c7d2fe;color:#4338ca;margin-right:5px}
+.oc-edit-icon:hover{background:#e0e7ff}
+.oc-delete-icon{background:#fef2f2;border-color:#fecaca;color:#dc2626}
+.oc-delete-icon:hover{background:#fee2e2}
+/* LESSONS */
+.ll-entry{background:#fff;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);border-left:4px solid #6366f1}
+.ll-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+.ll-cat-badge{padding:2px 10px;border-radius:10px;font-size:10px;font-weight:700;border:1px solid}
+.ll-section{margin-bottom:8px}
+.ll-section-label{font-size:10px;font-weight:700;color:#64748b;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px}
+.ll-section-text{font-size:13px;color:#1e293b;line-height:1.5}
+.ll-strategy{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 12px;font-size:12px;color:#166534;margin-top:6px}
+.ll-form{background:#f8fafc;border-radius:12px;padding:16px;margin-bottom:18px;border:1.5px solid #e2e8f0}
+.ll-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:#fff;border-radius:16px;max-width:620px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);max-height:92vh;overflow-y:auto;display:flex;flex-direction:column}
+.modal-header{padding:16px 20px 12px;border-bottom:1px solid #f1f5f9;position:sticky;top:0;background:#fff;z-index:1;border-radius:16px 16px 0 0}
+.modal-header h3{font-size:17px;font-weight:900;color:#1e1b4b}
+.modal-header .sub{font-size:11px;color:#6366f1;font-weight:700;margin-top:2px}
+.modal-body{padding:16px 20px;flex:1}
+.modal-footer{padding:12px 20px;border-top:1px solid #f1f5f9;display:flex;gap:10px;position:sticky;bottom:0;background:#fff;border-radius:0 0 16px 16px}
+.save-btn{flex:1;padding:10px;border-radius:9px;background:#6366f1;color:#fff;font-weight:700;font-size:14px;border:none;cursor:pointer}
+.cancel-btn{padding:10px 18px;border-radius:9px;background:#f3f4f6;color:#374151;font-weight:700;font-size:14px;border:none;cursor:pointer}
+/* GROUP EDITOR */
+.group-editor{border:1.5px solid #e2e8f0;border-radius:12px;margin-bottom:10px;overflow:hidden}
+.group-editor-header{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid #f1f5f9}
+.group-cat-sel{padding:5px 9px;border-radius:7px;border:1.5px solid #e2e8f0;font-size:12px;font-family:inherit;font-weight:700;outline:none;cursor:pointer}
+.remove-group-btn{background:none;border:none;color:#ef4444;cursor:pointer;font-size:14px;padding:2px 4px;flex-shrink:0;margin-left:auto}
+.subtasks-list{padding:8px 12px}
+.subtask-editor-row{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.subtask-inp{flex:2;padding:5px 9px;border-radius:7px;border:1.5px solid #e2e8f0;font-size:12px;font-family:inherit;outline:none}
+.subtask-inp:focus{border-color:#6366f1}
+.subtask-src-inp{flex:1;padding:5px 9px;border-radius:7px;border:1.5px solid #e2e8f0;font-size:11px;font-family:inherit;outline:none;color:#6b7280}
+.subtask-src-inp:focus{border-color:#6366f1}
+.subtask-note-inp{flex:1;padding:4px 9px;border-radius:7px;border:1.5px solid #e2e8f0;font-size:11px;font-family:inherit;outline:none;color:#64748b}
+.subtask-note-inp:focus{border-color:#6366f1}
+.st-sel{font-size:10px;padding:3px 6px;border-radius:6px;border:1.5px solid #e2e8f0;background:#fff;cursor:pointer;outline:none;font-family:inherit;flex-shrink:0}
+.remove-st-btn{background:none;border:none;color:#ef4444;cursor:pointer;font-size:12px;padding:0;flex-shrink:0}
+.move-st-btn{background:none;border:none;color:#6366f1;cursor:pointer;font-size:13px;padding:0 1px;line-height:1;flex-shrink:0}
+.move-st-btn:hover{color:#4338ca;transform:translateY(-1px)}
+.move-picker-row{display:none;align-items:center;gap:6px;margin:2px 0 6px;padding:7px 8px 7px 78px;background:#f8fafc;border-radius:8px}
+.move-picker-row label{font-size:10px;font-weight:700;color:#475569;white-space:nowrap}
+.move-picker-row input{flex:1;min-width:125px;padding:4px 7px;border-radius:7px;border:1.5px solid #c7d2fe;font-size:11px;font-family:inherit;outline:none}
+.move-picker-row input:focus{border-color:#6366f1}
+.move-confirm-btn{background:#6366f1;color:#fff;border:none;border-radius:7px;padding:5px 9px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap}
+.move-cancel-btn{background:none;border:none;color:#94a3b8;font-size:15px;cursor:pointer;padding:0 2px;line-height:1}
+.add-subtask-btn{background:none;border:1.5px dashed #c7d2fe;border-radius:7px;color:#6366f1;font-size:11px;font-weight:700;cursor:pointer;padding:4px 10px;width:100%;margin-top:2px;margin-bottom:4px}
+.add-subtask-btn:hover{background:#eef2ff}
+.add-group-btn{width:100%;padding:9px;border:2px dashed #c7d2fe;border-radius:10px;background:transparent;color:#6366f1;font-weight:700;font-size:13px;cursor:pointer;margin-bottom:12px}
+.add-group-btn:hover{background:#eef2ff}
+.form-lbl{font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:4px;margin-top:10px}
+.notes-area,.form-input{width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid #e2e8f0;font-size:12px;font-family:inherit;outline:none;resize:vertical}
+.notes-area:focus,.form-input:focus{border-color:#6366f1}
+.check-row{display:flex;align-items:center;gap:8px;margin-top:10px}
+.check-row input{width:16px;height:16px;cursor:pointer;accent-color:#6366f1}
+.check-row label{font-size:13px;font-weight:600;cursor:pointer}
+.phase-banner{background:linear-gradient(90deg,#eef2ff,#f5f3ff);border:1.5px solid #c7d2fe;border-radius:10px;padding:9px 13px;margin-bottom:12px}
+.phase-banner h3{font-size:12px;font-weight:800;color:#4338ca}
+.phase-banner p{font-size:10px;color:#6366f1;margin-top:1px}
+/* SETTINGS */
+.settings-popup{position:fixed;top:0;right:0;height:100vh;width:320px;background:#fff;z-index:400;box-shadow:-8px 0 40px rgba(0,0,0,.15);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s}
+.settings-popup.open{transform:translateX(0)}
+.settings-header{padding:18px 20px;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center}
+.settings-header h3{font-size:16px;font-weight:900;color:#1e1b4b}
+.settings-body{padding:20px;flex:1;overflow-y:auto}
+.settings-row{margin-bottom:16px}
+.settings-row label{font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:5px}
+.settings-row input{width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid #e2e8f0;font-size:13px;font-family:inherit;outline:none}
+.settings-row input:focus{border-color:#6366f1}
+.apply-btn{width:100%;padding:11px;border-radius:9px;background:#6366f1;color:#fff;font-weight:700;font-size:14px;border:none;cursor:pointer;margin-top:8px}
+.settings-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:399;display:none}
+.settings-overlay.open{display:block}
+/* POMODORO */
+.pomo-popup{position:fixed;bottom:24px;right:24px;width:300px;background:#1e1b4b;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.3);z-index:500;color:#fff;overflow:hidden;display:none}
+.pomo-popup.open{display:block}
+.pomo-header{padding:14px 16px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.1)}
+.pomo-header h3{font-size:14px;font-weight:900;letter-spacing:.3px}
+.pomo-close{background:none;border:none;color:rgba(255,255,255,.6);font-size:16px;cursor:pointer}
+.pomo-body{padding:16px}
+.pomo-mode-tabs{display:flex;gap:4px;margin-bottom:14px}
+.pomo-mode-btn{flex:1;padding:5px;border-radius:8px;font-size:10px;font-weight:700;cursor:pointer;border:none;background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);transition:.2s}
+.pomo-mode-btn.active{background:#6366f1;color:#fff}
+.pomo-timer{text-align:center;margin-bottom:14px}
+.pomo-time{font-size:48px;font-weight:900;letter-spacing:2px;line-height:1}
+.pomo-round{font-size:10px;color:rgba(255,255,255,.5);margin-top:4px}
+.pomo-controls{display:flex;gap:8px;margin-bottom:14px}
+.pomo-btn{flex:1;padding:9px;border-radius:9px;font-weight:700;font-size:13px;cursor:pointer;border:none;transition:.2s}
+.pomo-start{background:#6366f1;color:#fff}
+.pomo-start:hover{background:#4f46e5}
+.pomo-reset{background:rgba(255,255,255,.1);color:#fff}
+.pomo-reset:hover{background:rgba(255,255,255,.2)}
+.pomo-cat-sel{width:100%;padding:7px 10px;border-radius:8px;border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#fff;font-size:12px;font-family:inherit;outline:none;margin-bottom:10px}
+.pomo-cat-sel option{background:#1e1b4b;color:#fff}
+.pomo-settings-row{display:flex;gap:8px;margin-bottom:10px}
+.pomo-settings-row label{font-size:10px;color:rgba(255,255,255,.6);display:block;margin-bottom:3px}
+.pomo-settings-row input{width:100%;padding:5px 8px;border-radius:6px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#fff;font-size:12px;font-family:inherit;outline:none;text-align:center}
+.pomo-log{max-height:120px;overflow-y:auto;border-top:1px solid rgba(255,255,255,.1);padding-top:10px;margin-top:4px}
+.pomo-log-title{font-size:10px;font-weight:700;color:rgba(255,255,255,.5);margin-bottom:6px;letter-spacing:.5px}
+.pomo-log-item{display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,.7);padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.pomo-progress{height:4px;background:rgba(255,255,255,.1);border-radius:2px;margin-bottom:14px;overflow:hidden}
+.pomo-progress-fill{height:100%;background:#6366f1;border-radius:2px;transition:width .5s linear}
+.pomo-phase{text-align:center;font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#c7d2fe;margin-bottom:9px}
+.pomo-task-box{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px;margin-bottom:12px}
+.pomo-task-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;font-weight:800;color:rgba(255,255,255,.65);margin-bottom:7px;text-transform:uppercase;letter-spacing:.4px}
+.pomo-date-wrap{display:flex;align-items:center;gap:5px;color:rgba(255,255,255,.75);text-transform:none}
+.pomo-date-wrap input{width:112px;border:0;background:transparent;color:#fff;font-size:10px;font-family:inherit;outline:none;color-scheme:dark}
+.pomo-task-sel{width:100%;padding:8px 9px;border-radius:8px;border:1px solid rgba(255,255,255,.16);background:#292653;color:#fff;font-size:11px;font-family:inherit;outline:none}
+.pomo-task-sel:disabled,.pomo-date-wrap input:disabled{opacity:.55;cursor:not-allowed}
+.pomo-task-note{font-size:9px;color:rgba(255,255,255,.45);margin-top:5px;line-height:1.35;min-height:12px}
+.pomo-settings-details{margin:2px 0 10px;color:rgba(255,255,255,.55);font-size:10px}
+.pomo-settings-details summary{cursor:pointer;user-select:none;padding:4px 0}
+.pomo-settings-details[open] summary{margin-bottom:8px}
+
+/* CHARTS */
+.chart-container{background:#fff;border-radius:14px;padding:20px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.chart-bars{display:flex;align-items:flex-end;gap:8px;height:120px;margin-top:12px}
+.chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.chart-bar{width:100%;border-radius:6px 6px 0 0;background:#6366f1;min-height:2px;transition:height .5s}
+.chart-bar-label{font-size:9px;color:#64748b;font-weight:600}
+.chart-bar-val{font-size:9px;color:#6366f1;font-weight:700}
+/* ICS */
+.ics-btn{background:#16a34a;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-weight:700;font-size:12px;cursor:pointer}
+.ics-btn:hover{background:#15803d}
+input[type=date],input[type=text],input[type=number],select,textarea{font-family:inherit}
+/* AUTH */
+.auth-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#1e1b4b,#4338ca);z-index:2000;display:flex;align-items:center;justify-content:center;padding:20px}
+.auth-card{width:min(420px,100%);background:#fff;border-radius:18px;padding:28px;box-shadow:0 24px 70px rgba(0,0,0,.3)}
+.auth-card h2{font-size:22px;font-weight:900;color:#1e1b4b;margin-bottom:5px}
+.auth-card p{font-size:12px;line-height:1.5;color:#64748b;margin-bottom:18px}
+.auth-field{margin-bottom:12px}
+.auth-field label{display:block;font-size:11px;font-weight:800;color:#374151;margin-bottom:5px}
+.auth-field input{width:100%;padding:11px 12px;border:1.5px solid #cbd5e1;border-radius:9px;font-size:14px;outline:none;font-family:inherit}
+.auth-field input:focus{border-color:#6366f1;box-shadow:0 0 0 3px #eef2ff}
+.auth-submit{width:100%;border:0;border-radius:9px;padding:11px 14px;background:#4f46e5;color:#fff;font-weight:800;font-size:14px;cursor:pointer;margin-top:4px}
+.auth-submit:disabled{opacity:.65;cursor:wait}
+.auth-error{display:none;margin-top:11px;padding:9px 10px;border-radius:8px;background:#fef2f2;color:#b91c1c;font-size:11px;font-weight:600;line-height:1.4}
+.auth-note{font-size:10px!important;color:#94a3b8!important;margin:12px 0 0!important;text-align:center}
+.auth-build{display:inline-block;margin-bottom:12px;padding:4px 8px;border-radius:999px;background:#eef2ff;color:#4338ca;font-size:10px;font-weight:800}
+#fatal-error{display:none;position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;background:#fff;border:2px solid #ef4444;border-radius:10px;padding:12px;color:#991b1b;font:12px/1.45 system-ui,sans-serif;white-space:pre-wrap;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+@media(max-width:700px){.week-grid{grid-template-columns:1fr 1fr}.ll-form-grid{grid-template-columns:1fr}}
+@media(max-width:480px){.week-grid{grid-template-columns:1fr}.cal-day{min-height:65px;padding:4px}.pomo-popup{width:calc(100vw - 32px);right:16px}}
+</style>
+</head>
+<body>
+
+<!-- PRIVATE FIREBASE SIGN-IN -->
+<div class="auth-overlay" id="auth-overlay">
+  <div class="auth-card">
+    <div class="auth-build">AUTH BUILD 2 - 2026-09-02</div>
+    <h2>MCAT Study Planner</h2>
+    <p id="auth-status">Login screen loaded. Connecting to Firebase...</p>
+    <p>Sign in with the Firebase email/password account you created. Your password is sent directly to Firebase Authentication and is not stored in this HTML file.</p>
+    <form id="auth-form" onsubmit="event.preventDefault(); window.plannerLogin && window.plannerLogin();">
+      <div class="auth-field">
+        <label for="auth-email">Email</label>
+        <input id="auth-email" type="email" autocomplete="username" required placeholder="you@example.com">
+      </div>
+      <div class="auth-field">
+        <label for="auth-password">Password</label>
+        <input id="auth-password" type="password" autocomplete="current-password" required placeholder="Your Firebase password">
+      </div>
+      <button class="auth-submit" id="auth-submit" type="submit">Sign In</button>
+      <div class="auth-error" id="auth-error"></div>
+    </form>
+    <p class="auth-note">After the first successful sign-in, Firebase will keep you signed in on this browser until you sign out.</p>
+  </div>
+</div>
+
+<div id="fatal-error"></div>
+<script>
+(function(){
+  function showFatal(msg){
+    var box=document.getElementById('fatal-error');
+    if(!box) return;
+    box.style.display='block';
+    box.textContent='Planner error: ' + msg;
+  }
+  window.addEventListener('error', function(e){ showFatal(e.message || 'Unknown JavaScript error'); });
+  window.addEventListener('unhandledrejection', function(e){ var r=e.reason; showFatal((r && (r.message || r.code)) || String(r)); });
+  window.__showPlannerFatal=showFatal;
+  setTimeout(function(){
+    var st=document.getElementById('auth-status');
+    if(st && st.textContent.indexOf('Connecting') !== -1){
+      st.textContent='Firebase did not finish loading. Check that this is the deployed AUTH BUILD 2 file and that gstatic.com is reachable.';
+    }
+  }, 5000);
+})();
+</script>
+
+<!-- SYNC STATUS BAR -->
+<div class="sync-bar syncing" id="sync-bar">Connecting to Firebase...</div>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <h1>MCAT Study Planner</h1>
+    <div class="nav-tabs">
+      <button class="nav-btn active" onclick="showView('monthly',this)">Monthly</button>
+      <button class="nav-btn" onclick="showView('weekly',this)">Weekly</button>
+      <button class="nav-btn" onclick="showView('daily',this)">Daily</button>
+      <button class="nav-btn" onclick="showView('progress',this)">Progress</button>
+      <button class="nav-btn" onclick="showView('weakness',this)">Weaknesses</button>
+      <button class="nav-btn" onclick="showView('lessons',this)">Lessons Learned</button>
+      <button class="nav-btn" onclick="showView('ochem',this)">OChem Tracker</button>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="countdown-box">
+      <div class="cd-num" id="cd-days">--</div>
+      <div class="cd-label">DAYS TO MCAT</div>
+      <div style="font-size:9px;color:#a5b4fc;margin-top:2px" id="cd-testdate">Feb 6, 2027</div>
+    </div>
+    <div class="topbar-btns">
+      <button class="tb-btn" onclick="togglePomo()">Timer</button>
+      <button class="tb-btn" onclick="openSettings()">Settings</button>
+      <button class="tb-btn" id="signout-btn" onclick="window.plannerLogout && window.plannerLogout()" style="display:none">Sign Out</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- VIEWS -->
+<div id="view-monthly" class="view active">
+  <div class="month-nav">
+    <button class="mnav-btn" onclick="changeMonth(-1)">Prev</button>
+    <h2 id="month-title"></h2>
+    <button class="mnav-btn" onclick="changeMonth(1)">Next</button>
+  </div>
+  <div class="phase-banner" id="phase-banner"></div>
+  <div class="cal-grid" id="cal-grid"></div>
+</div>
+
+<div id="view-weekly" class="view">
+  <div class="week-nav">
+    <button class="mnav-btn" onclick="changeWeek(-1)">Prev</button>
+    <h2 id="week-title" style="font-size:16px;font-weight:800;color:#1e1b4b;flex:1"></h2>
+    <button class="mnav-btn" onclick="changeWeek(1)">Next</button>
+    <button class="ics-btn" onclick="exportICS()">Export to Apple Calendar</button>
+  </div>
+  <div style="font-size:11px;color:#64748b;margin-bottom:10px">Tasks export as all-day events. Double-click the downloaded .ics file to add to Apple Calendar.</div>
+  <div class="week-grid" id="week-grid"></div>
+</div>
+
+<div id="view-daily" class="view">
+  <div class="day-select-row">
+    <button class="mnav-btn" onclick="changeDailyDate(-1)" aria-label="Previous day">&#8592; Prev</button>
+    <label style="font-size:13px;font-weight:700;color:#374151">Select Date:</label>
+    <input type="date" id="day-picker" value="2026-09-07" onchange="renderDailyView()" style="padding:7px 10px;border-radius:8px;border:1.5px solid #e2e8f0;font-size:13px;outline:none">
+    <button class="mnav-btn" onclick="changeDailyDate(1)" aria-label="Next day">Next &#8594;</button>
+    <button onclick="openModalFromDaily()" style="background:#6366f1;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:12px">Edit Tasks</button>
+  </div>
+  <div id="daily-content"></div>
+</div>
+
+<div id="view-progress" class="view">
+  <div class="big-prog">
+    <h3 style="font-size:18px;font-weight:900;color:#1e1b4b">Overall Progress</h3>
+    <div style="display:flex;justify-content:space-between;font-size:13px;color:#64748b;margin-top:8px">
+      <span id="prog-label">0 / 0 study days completed</span>
+      <span id="prog-pct" style="font-weight:800;color:#312e81">0%</span>
+    </div>
+    <div class="big-bar-bg"><div class="big-bar-fill" id="big-fill" style="width:0%"></div></div>
+    <div style="font-size:11px;color:#9ca3af" id="prog-range"></div>
+  </div>
+  <div class="chart-container">
+    <h3 style="font-size:15px;font-weight:800;color:#1e1b4b">Focused Study Time This Week</h3>
+    <p style="font-size:11px;color:#9ca3af;margin-top:2px">Hours logged via Pomodoro timer</p>
+    <div class="chart-bars" id="time-chart"></div>
+  </div>
+  <div class="prog-grid" id="prog-cat-grid"></div>
+  <div class="big-prog">
+    <h3 style="font-size:16px;font-weight:900;color:#1e1b4b;margin-bottom:14px">Phase Progress</h3>
+    <div id="phase-prog"></div>
+  </div>
+</div>
+
+<div id="view-weakness" class="view">
+  <div class="weak-section">
+    <h3>Weakness and Focus Tracker</h3>
+    <p style="font-size:12px;color:#64748b;margin-bottom:14px">Log weak areas as you discover them through practice. Only you can identify these.</p>
+    <div class="weak-form">
+      <select id="w-section" style="min-width:120px"><option>Bio/Biochem</option><option>Chem/Physics</option><option>Psych/Soc</option><option>CARS</option><option>OChem</option><option>Gen Chem</option><option>Physics</option><option>Bio</option><option>Biochem</option><option>Psych</option><option>Soc</option></select>
+      <input id="w-topic" placeholder="Topic (e.g. Krebs cycle, SN2 reactions...)">
+      <select id="w-sev" style="min-width:120px"><option value="h">High priority</option><option value="m">Medium</option><option value="l">Low / improving</option></select>
+      <input id="w-src" placeholder="Found in... (e.g. AAMC FL3)" style="min-width:130px">
+      <input id="w-date" type="date" style="padding:7px 10px;border-radius:8px;border:1.5px solid #e2e8f0;font-size:12px;outline:none">
+      <button class="add-btn" onclick="addWeakness()">+ Add</button>
+    </div>
+    <div style="overflow-x:auto"><table class="data-table"><thead><tr><th>Section</th><th>Topic</th><th>Priority</th><th>Found In</th><th>Date</th><th>Status</th><th></th></tr></thead><tbody id="weak-tbody"></tbody></table></div>
+  </div>
+</div>
+
+<div id="view-lessons" class="view">
+  <div class="weak-section">
+    <h3>Lessons Learned Journal</h3>
+    <p style="font-size:12px;color:#64748b;margin-bottom:16px">Log what you learned from each practice session. This becomes your personal MCAT strategy book.</p>
+    <div class="ll-form">
+      <div class="ll-form-grid">
+        <div><label class="form-lbl">Date</label><input type="date" id="ll-date" style="width:100%;padding:7px 10px;border-radius:8px;border:1.5px solid #e2e8f0;font-size:12px;outline:none"></div>
+        <div><label class="form-lbl">Category</label>
+          <select id="ll-cat" style="width:100%;padding:7px 10px;border-radius:8px;border:1.5px solid #e2e8f0;font-size:12px;outline:none;font-family:inherit">
+            <option value="bb">Bio/Biochem</option><option value="cp">Chem/Physics</option><option value="ps">Psych/Soc</option><option value="cars">CARS</option><option value="ochem">OChem</option><option value="strategy">General Strategy</option>
+          </select>
+        </div>
+        <div><label class="form-lbl">Source</label><input type="text" id="ll-src" placeholder="e.g. AAMC FL3, JW Passage 7..." style="width:100%;padding:7px 10px;border-radius:8px;border:1.5px solid #e2e8f0;font-size:12px;outline:none"></div>
+        <div><label class="form-lbl">Linked Weakness</label>
+          <select id="ll-link" style="width:100%;padding:7px 10px;border-radius:8px;border:1.5px solid #e2e8f0;font-size:12px;outline:none;font-family:inherit" onclick="populateWeaknessDropdown()">
+            <option value="">-- None --</option>
+          </select>
+        </div>
+      </div>
+      <label class="form-lbl">What went wrong / what tripped you up</label>
+      <textarea class="notes-area" id="ll-wrong" rows="2" placeholder="e.g. Confused competitive vs. non-competitive inhibition..."></textarea>
+      <label class="form-lbl">What you now understand / correct reasoning</label>
+      <textarea class="notes-area" id="ll-right" rows="2" placeholder="e.g. Competitive inhibitors increase Km but do not change Vmax..."></textarea>
+      <label class="form-lbl">Strategy note (test-taking insight)</label>
+      <textarea class="notes-area" id="ll-strategy" rows="2" placeholder="e.g. For graph-based enzyme questions, always check axes first..."></textarea>
+      <button class="add-btn" style="margin-top:12px;padding:10px 24px;font-size:13px" onclick="addLesson()">Log Lesson</button>
+    </div>
+    <div id="ll-list"></div>
+  </div>
+</div>
+
+<div id="view-ochem" class="view">
+  <div class="weak-section">
+    <h3>OChem Class Tracker</h3>
+    <p style="font-size:12px;color:#64748b;margin-bottom:16px">Log your OChem assignments, exams and labs here. They will automatically appear on their due dates across all calendar views and in your Apple Calendar export.</p>
+    <!-- ADD FORM -->
+    <div style="background:#f5f3ff;border-radius:12px;padding:16px;margin-bottom:18px;border:1.5px solid #ddd6fe">
+      <div id="oc-form-title" style="font-size:13px;font-weight:800;color:#7c3aed;margin-bottom:12px">Add OChem Assignment</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end">
+        <div style="flex:2;min-width:180px">
+          <label style="font-size:10px;font-weight:700;color:#374151;display:block;margin-bottom:3px">Assignment Name</label>
+          <input id="oc-name" placeholder="e.g. HW 3 - Chapter 7, Lab Report 2, Exam 2..." style="width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid #ddd6fe;font-size:12px;font-family:inherit;outline:none">
+        </div>
+        <div style="min-width:130px">
+          <label style="font-size:10px;font-weight:700;color:#374151;display:block;margin-bottom:3px">Type</label>
+          <select id="oc-type" style="width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid #ddd6fe;font-size:12px;font-family:inherit;outline:none">
+            <option>Homework</option>
+            <option>Pre-lab</option>
+            <option>Lab Report</option>
+            <option>Exam</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div style="min-width:140px">
+          <label style="font-size:10px;font-weight:700;color:#374151;display:block;margin-bottom:3px">Due Date</label>
+          <input type="date" id="oc-due" style="width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid #ddd6fe;font-size:12px;font-family:inherit;outline:none">
+        </div>
+        <div style="min-width:130px">
+          <label style="font-size:10px;font-weight:700;color:#374151;display:block;margin-bottom:3px">Status</label>
+          <select id="oc-status" style="width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid #ddd6fe;font-size:12px;font-family:inherit;outline:none">
+            <option value="">Not Started</option>
+            <option value="started">Started</option>
+            <option value="inprogress">In Progress</option>
+            <option value="done">Done</option>
+          </select>
+        </div>
+        <button id="oc-submit-btn" onclick="addOchemAssignment()" style="background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:9px 20px;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap;align-self:flex-end">+ Add</button>
+        <button id="oc-cancel-btn" onclick="cancelOchemEdit()" style="display:none;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;border-radius:8px;padding:8px 14px;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;align-self:flex-end">Cancel</button>
+      </div>
+    </div>
+    <!-- ASSIGNMENT LIST -->
+    <div style="font-size:13px;font-weight:800;color:#1e1b4b;margin-bottom:10px">My Assignments</div>
+    <div style="overflow-x:auto">
+      <table class="data-table">
+        <thead><tr>
+          <th>Assignment</th><th>Type</th><th>Due Date</th><th>Status</th><th>Days Left</th><th></th>
+        </tr></thead>
+        <tbody id="ochem-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div class="modal-bg" id="modal" style="display:none">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="m-date"></h3>
+      <div class="sub" id="m-phase"></div>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:11px;font-weight:700;color:#374151;margin-bottom:8px">TASK GROUPS <span style="font-weight:400;color:#9ca3af">-- one group per category, unlimited sub-tasks each</span></div>
+      <div id="group-editor-list"></div>
+      <button class="add-group-btn" onclick="addGroupEditor()">+ Add Category Group</button>
+      <label class="form-lbl">My Notes for Today</label>
+      <textarea class="notes-area" id="m-notes" rows="3" placeholder="Insights, struggles, or wins today?"></textarea>
+      <div class="check-row">
+        <input type="checkbox" id="m-done">
+        <label for="m-done">Mark entire day as completed</label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+      <button class="save-btn" onclick="saveModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="settings-overlay" id="settings-overlay" onclick="closeSettings()"></div>
+<div class="settings-popup" id="settings-popup">
+  <div class="settings-header">
+    <h3>Plan Settings</h3>
+    <button onclick="closeSettings()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#64748b">x</button>
+  </div>
+  <div class="settings-body">
+    <p style="font-size:12px;color:#64748b;margin-bottom:18px">Change your study start or test date. The entire calendar and phases adjust automatically.</p>
+    <div class="settings-row"><label>Study Start Date</label><input type="date" id="set-start" value="2026-09-07"></div>
+    <div class="settings-row"><label>MCAT Test Date</label><input type="date" id="set-end" value="2027-02-06"></div>
+    <button class="apply-btn" onclick="applySettings()">Apply Changes</button>
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid #f1f5f9">
+      <p style="font-size:11px;color:#9ca3af;line-height:1.6">Tip: You can extend past your original test date or move it earlier at any time. All custom edits are preserved.</p>
+    </div>
+  </div>
+</div>
+
+<!-- POMODORO -->
+<div class="pomo-popup" id="pomo-popup">
+  <div class="pomo-header">
+    <h3>Pomodoro</h3>
+    <button class="pomo-close" onclick="togglePomo()" aria-label="Close timer">&times;</button>
+  </div>
+  <div class="pomo-body">
+    <div class="pomo-phase" id="pomo-phase">Focus</div>
+    <div class="pomo-progress"><div class="pomo-progress-fill" id="pomo-prog-fill" style="width:0%"></div></div>
+    <div class="pomo-timer">
+      <div class="pomo-time" id="pomo-time">25:00</div>
+      <div class="pomo-round" id="pomo-round">Round 1 of 4</div>
+    </div>
+
+    <div class="pomo-task-box">
+      <div class="pomo-task-head">
+        <span>Focus task</span>
+        <div class="pomo-date-wrap" title="Choose task date">
+          <span aria-hidden="true">&#128197;</span>
+          <input type="date" id="pomo-task-date" onchange="refreshPomoTasks()" aria-label="Task date">
+        </div>
+      </div>
+      <select class="pomo-task-sel" id="pomo-task-select" aria-label="Task to focus on"></select>
+      <div class="pomo-task-note" id="pomo-task-note"></div>
+    </div>
+
+    <div class="pomo-controls">
+      <button class="pomo-btn pomo-start" id="pomo-start-btn" onclick="togglePomoTimer()">Start</button>
+      <button class="pomo-btn pomo-reset" onclick="resetPomo()">Reset</button>
+    </div>
+
+    <details class="pomo-settings-details">
+      <summary>Timer settings</summary>
+      <div class="pomo-settings-row">
+        <div style="flex:1"><label>Focus</label><input type="number" id="pomo-focus-min" value="25" min="1" max="60" onchange="updatePomoSettings()"></div>
+        <div style="flex:1"><label>Break</label><input type="number" id="pomo-short-min" value="5" min="1" max="30" onchange="updatePomoSettings()"></div>
+        <div style="flex:1"><label>Long</label><input type="number" id="pomo-long-min" value="15" min="5" max="60" onchange="updatePomoSettings()"></div>
+      </div>
+    </details>
+
+    <div class="pomo-log" id="pomo-log">
+      <div class="pomo-log-title">TODAY'S SESSIONS</div>
+      <div id="pomo-log-items"><div style="font-size:10px;color:rgba(255,255,255,.4)">No sessions yet.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- FIREBASE + APP SCRIPT -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDU7WDqRSDqnfYHE_kZhnemfqfpa9fcA0w",
+  authDomain: "mcat-planner-d1694.firebaseapp.com",
+  projectId: "mcat-planner-d1694",
+  storageBucket: "mcat-planner-d1694.firebasestorage.app",
+  messagingSenderId: "750628459233",
+  appId: "1:750628459233:web:51a6d56fd691ae7a83dda0"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const authStatus = document.getElementById('auth-status');
+if(authStatus) authStatus.textContent = 'Firebase loaded. Sign in below.';
+
+// ===== SYNC HELPERS =====
+function setSyncBar(state, msg) {
+  const bar = document.getElementById('sync-bar');
+  bar.textContent = msg;
+  bar.className = 'sync-bar' + (state === 'ok' ? '' : state === 'error' ? ' error' : ' syncing');
+}
+
+async function saveToFirebase(collection_name, id, data) {
+  try {
+    await setDoc(doc(db, collection_name, id), data);
+  } catch(e) {
+    setSyncBar('error', e?.code === 'permission-denied' ? 'Sync blocked by Firestore rules.' : 'Sync error -- check your connection.');
+    console.error(e);
+  }
+}
+
+async function loadFromFirebase() {
+  try {
+    setSyncBar('syncing', 'Loading your data...');
+    // Load dayData
+    const daySnap = await getDocs(collection(db, 'dayData'));
+    daySnap.forEach(d => { window.dayData[d.id] = d.data(); });
+    // Load weaknesses
+    const wSnap = await getDoc(doc(db, 'appData', 'weaknesses'));
+    if(wSnap.exists()) window.weaknesses = wSnap.data().list || [];
+    // Load lessons
+    const lSnap = await getDoc(doc(db, 'appData', 'lessons'));
+    if(lSnap.exists()) window.lessons = lSnap.data().list || [];
+    // Load settings
+    const sSnap = await getDoc(doc(db, 'appData', 'settings'));
+    if(sSnap.exists()) {
+      const s = sSnap.data();
+      if(s.start) { window.START = new Date(s.start + 'T00:00:00'); document.getElementById('set-start').value = s.start; }
+      if(s.end) { window.TEST = new Date(s.end + 'T00:00:00'); document.getElementById('set-end').value = s.end; }
+    }
+    // Load OChem assignments
+    const oSnap = await getDoc(doc(db, 'appData', 'ochemAssignments'));
+    if(oSnap.exists()) window.ochemAssignments = oSnap.data().list || [];
+    // Load Pomodoro sessions
+    const pSnap = await getDoc(doc(db, 'appData', 'pomodoroLog'));
+    if(pSnap.exists()) window.pomodoroLog = pSnap.data().sessions || [];
+    setSyncBar('ok', 'Synced with Firebase -- data saved across all devices');
+    window.renderMonthly();
+    window.updateProgress();
+    window.renderWeaknesses();
+    window.renderLessons();
+    if(window.renderOchemTracker) window.renderOchemTracker();
+    window.updateCountdown();
+    window.renderPomoLog();
+    window.renderTimeChart();
+  } catch(e) {
+    setSyncBar('error', e?.code === 'permission-denied' ? 'Signed in, but Firestore rules denied this account. Check the UID in your rules.' : 'Could not load Firebase data. Check your connection.');
+    console.error(e);
+  }
+}
+
+// Expose save functions globally
+window.fbSaveDayData = async (key) => {
+  setSyncBar('syncing', 'Saving...');
+  await saveToFirebase('dayData', key, window.dayData[key]);
+  setSyncBar('ok', 'Saved and synced');
+};
+window.fbSaveWeaknesses = async () => {
+  setSyncBar('syncing', 'Saving...');
+  await saveToFirebase('appData', 'weaknesses', { list: window.weaknesses });
+  setSyncBar('ok', 'Saved and synced');
+};
+window.fbSaveLessons = async () => {
+  setSyncBar('syncing', 'Saving...');
+  await saveToFirebase('appData', 'lessons', { list: window.lessons });
+  setSyncBar('ok', 'Saved and synced');
+};
+window.fbSaveSettings = async (start, end) => {
+  setSyncBar('syncing', 'Saving...');
+  await saveToFirebase('appData', 'settings', { start, end });
+  setSyncBar('ok', 'Saved and synced');
+};
+window.fbSaveOchem = async () => {
+  await saveToFirebase('appData', 'ochemAssignments', { list: window.ochemAssignments });
+};
+window.fbSavePomodoroLog = async () => {
+  await saveToFirebase('appData', 'pomodoroLog', { sessions: window.pomodoroLog });
+};
+
+function showAuthError(message) {
+  const el = document.getElementById('auth-error');
+  el.textContent = message;
+  el.style.display = 'block';
+}
+
+function friendlyAuthError(error) {
+  const code = error?.code || '';
+  if(code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') return 'Incorrect email or password.';
+  if(code === 'auth/invalid-email') return 'That email address is not valid.';
+  if(code === 'auth/too-many-requests') return 'Too many failed attempts. Try again later.';
+  if(code === 'auth/network-request-failed') return 'Could not reach Firebase. Check your internet connection.';
+  if(code === 'auth/unauthorized-domain') return 'This GitHub Pages domain is not authorized in Firebase Authentication. Add your github.io domain under Authentication > Settings > Authorized domains.';
+  return 'Could not sign in. Check your email and password.';
+}
+
+window.plannerLogin = async () => {
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const button = document.getElementById('auth-submit');
+  const errorBox = document.getElementById('auth-error');
+  errorBox.style.display = 'none';
+  button.disabled = true;
+  button.textContent = 'Signing in...';
+  try {
+    await setPersistence(auth, browserLocalPersistence);
+    await signInWithEmailAndPassword(auth, email, password);
+    document.getElementById('auth-password').value = '';
+  } catch(e) {
+    console.error(e);
+    showAuthError(friendlyAuthError(e));
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Sign In';
+  }
+};
+
+window.plannerLogout = async () => {
+  try {
+    await signOut(auth);
+  } catch(e) {
+    console.error(e);
+    setSyncBar('error', 'Could not sign out.');
+  }
+};
+
+// Keep the Firebase session on this browser, then load Firestore only after authentication.
+setPersistence(auth, browserLocalPersistence).catch(console.error);
+
+onAuthStateChanged(auth, async (user) => {
+  const overlay = document.getElementById('auth-overlay');
+  const signout = document.getElementById('signout-btn');
+  if(user) {
+    overlay.style.display = 'none';
+    signout.style.display = '';
+    setSyncBar('syncing', 'Signed in -- loading your planner...');
+    await loadFromFirebase();
+  } else {
+    overlay.style.display = 'flex';
+    signout.style.display = 'none';
+    setSyncBar('syncing', 'Sign in to access your private Firebase data');
+  }
+});
+</script>
+
+<script>
+// ===== CONSTANTS =====
+window.START = new Date(2026,8,7);
+window.TEST  = new Date(2027,1,6);
+const OCHEM_END = new Date(2026,11,20);
+
+const CAT = {
+  cr:    {label:"Content Review",    color:"#6366f1",bg:"#eef2ff",border:"#c7d2fe"},
+  cars:  {label:"CARS",              color:"#0891b2",bg:"#ecfeff",border:"#a5f3fc"},
+  pass:  {label:"Practice Passages", color:"#16a34a",bg:"#f0fdf4",border:"#bbf7d0"},
+  fl:    {label:"Full Length Exam",  color:"#be185d",bg:"#fdf2f8",border:"#f9a8d4"},
+  anki:  {label:"Anki",             color:"#b45309",bg:"#fffbeb",border:"#fcd34d"},
+  ochem: {label:"OChem",            color:"#7c3aed",bg:"#f5f3ff",border:"#ddd6fe"},
+  review:{label:"Review",           color:"#d97706",bg:"#fff7ed",border:"#fed7aa"},
+  off:   {label:"Rest Day",         color:"#6b7280",bg:"#f9fafb",border:"#e5e7eb"},
+};
+
+const ST = {
+  '':         {label:'Not Started',   cls:''},
+  started:    {label:'Started',       cls:'st-started'},
+  inprogress: {label:'In Progress',   cls:'st-inprogress'},
+  done:       {label:'Done',          cls:'st-done'},
+};
+
+const LL_CATS = {
+  bb:{label:'Bio/Biochem',color:'#6366f1',bg:'#eef2ff',border:'#c7d2fe'},
+  cp:{label:'Chem/Physics',color:'#0891b2',bg:'#ecfeff',border:'#a5f3fc'},
+  ps:{label:'Psych/Soc',color:'#7c3aed',bg:'#f5f3ff',border:'#ddd6fe'},
+  cars:{label:'CARS',color:'#be185d',bg:'#fdf2f8',border:'#f9a8d4'},
+  ochem:{label:'OChem',color:'#16a34a',bg:'#f0fdf4',border:'#bbf7d0'},
+  strategy:{label:'General Strategy',color:'#d97706',bg:'#fff7ed',border:'#fed7aa'},
+};
+
+const KA_TOPICS = [
+  "KA F1: Amino Acids and Protein Structure","KA F1: Enzymes and Kinetics","KA F1: DNA Replication and Repair",
+  "KA F1: Transcription and Translation","KA F2: Atomic Structure and Periodic Trends","KA F2: Chemical Bonding and VSEPR",
+  "KA F2: Thermodynamics and Equilibrium","KA F2: Kinematics and Forces","KA F3: Sensation and Perception",
+  "KA F3: Learning, Memory and Cognition","KA F3: Social Behavior and Group Dynamics","KA F3: Social Inequality and Health Disparities",
+  "UWorld: Bio passage sets","UWorld: C/P passage sets","UWorld: Psych/Soc passages",
+  "AAMC Section Bank: B/B","AAMC Section Bank: C/P","AAMC Section Bank: Psych/Soc","KA Passages: Mixed Review",
+];
+const OCHEM_TOPICS = [
+  "Prof. Eman: Hybridization and Bonding","Prof. Eman: Stereochemistry","Prof. Eman: SN1/SN2 Reactions",
+  "Prof. Eman: E1/E2 Elimination","Prof. Eman: Carbonyls - Aldehydes and Ketones",
+  "Prof. Eman: Carboxylic Acids and Derivatives","Prof. Eman: Amines and Aromatic Compounds",
+  "Prof. Eman: NMR and IR Spectroscopy","Prof. Eman: MCAT OChem High-Yield Review",
+];
+
+// ===== STATE =====
+window.dayData = {};
+window.weaknesses = [];
+window.lessons = [];
+window.pomodoroLog = [];
+window.ochemAssignments = [];
+const AUTO_PLAN_CUTOFF = new Date(2026,11,20); // Dec 20, 2026 onward is manual-only.
+const initialToday = new Date();
+initialToday.setHours(0,0,0,0);
+let currentMonth = new Date(initialToday.getFullYear(),initialToday.getMonth(),1);
+let currentWeekStart = new Date(initialToday);
+currentWeekStart.setDate(initialToday.getDate()-((initialToday.getDay()+6)%7));
+let lastSeenCalendarDay = `${initialToday.getFullYear()}-${initialToday.getMonth()}-${initialToday.getDate()}`;
+let editingKey = null;
+let modalGroups = [];
+let editingOchemIndex = null;
+
+function dk(d){ return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; }
+function parseKey(k){ const[y,m,d]=k.split('-').map(Number);return new Date(y,m,d); }
+function inRange(d){ return d>=window.START && d<=window.TEST; }
+function getPhase(d){
+  const total=window.TEST-window.START;
+  const elapsed=Math.max(0,Math.min(d-window.START,total));
+  const pct=elapsed/total;
+  if(pct<0.18) return {name:"Phase 1: KA Foundations - Bio and Biochem",color:"#6366f1",idx:0};
+  if(pct<0.36) return {name:"Phase 2: KA Foundations - Chem and Physics",color:"#0891b2",idx:1};
+  if(pct<0.52) return {name:"Phase 3: KA Foundations - Psych/Soc and OChem",color:"#7c3aed",idx:2};
+  if(pct<0.70) return {name:"Phase 4: Passages, UWorld and AAMC Banks",color:"#16a34a",idx:3};
+  return {name:"Phase 5: Full Lengths and Deep Review",color:"#be185d",idx:4};
+}
+function weekNum(d){ return Math.max(0,Math.floor((d-window.START)/604800000)); }
+function isOchem(d){ return d>=new Date(2026,8,1)&&d<=OCHEM_END; }
+function stClass(s){ return ST[s]?.cls||''; }
+function getStClass(s){ return ST[s]?.cls||''; }
+function groupStatusColor(subtasks){
+  if(!subtasks.length) return '#e2e8f0';
+  if(subtasks.every(s=>s.status==='done')) return '#86efac';
+  if(subtasks.some(s=>s.status==='inprogress')) return '#93c5fd';
+  if(subtasks.some(s=>s.status==='started')) return '#fde047';
+  return '#e2e8f0';
+}
+function groupAllDone(subtasks){ return subtasks.length>0&&subtasks.every(s=>s.status==='done'); }
+function subtaskDotColor(s){ return s==='done'?'#86efac':s==='inprogress'?'#93c5fd':s==='started'?'#fde047':'#e2e8f0'; }
+
+// ===== DEFAULT GROUPS =====
+function defaultGroups(d){
+  if(!(d instanceof Date)||isNaN(d)) return [];
+  const localDate=new Date(d);localDate.setHours(0,0,0,0);
+  if(localDate>=AUTO_PLAN_CUTOFF) return [];
+  const dow=d.getDay();
+  if(dow===0) return [{cat:'off',subtasks:[{text:'Rest Day',src:'--',note:'Recovery is part of the plan.',status:''}]}];
+  const ph=getPhase(d);
+  const wk=weekNum(d);
+  const ka=KA_TOPICS[Math.min(wk,KA_TOPICS.length-1)];
+  const oc=OCHEM_TOPICS[Math.min(Math.floor(wk/1.5),OCHEM_TOPICS.length-1)];
+  const ocperiod=isOchem(d);
+  const groups=[];
+  const kaCarsSt=()=>({text:'KA CARS: 1 passage (timed)',src:'Khan Academy CARS',note:'Read actively. Identify argument, tone, purpose.',status:''});
+  const jwCarsSt={text:'JW CARS Practice Exam: 1 passage set (timed)',src:'Jack Westin CARS Exams',note:'Simulate test pressure. Review every wrong answer.',status:''};
+  const carsGroup=()=>({cat:'cars',subtasks:[kaCarsSt()]});
+  const wednesdayCarsGroup=()=>({cat:'cars',subtasks:[jwCarsSt,kaCarsSt()]});
+  const ankiGroup=()=>({cat:'anki',subtasks:[{text:'Anki: Review due cards (30-40 min)',src:'Anki (Anking deck)',note:'Daily consistency beats marathon sessions.',status:''}]});
+  if(ph.idx===4){
+    const flList=['AAMC Unscored Practice Exam','Jack Westin FL1','AAMC FL3','Jack Westin FL2','AAMC FL4','Jack Westin FL3','AAMC FL5','Jack Westin FL4','AAMC FL6 (Final Prep)'];
+    const flSrc=['AAMC','Jack Westin','AAMC','Jack Westin','AAMC','Jack Westin','AAMC','Jack Westin','AAMC'];
+    const fi=Math.max(0,wk-Math.floor((window.TEST-window.START)/604800000*0.7));
+    if(dow===1) return [{cat:'fl',subtasks:[{text:flList[Math.min(fi,flList.length-1)],src:flSrc[Math.min(fi,flSrc.length-1)],note:'Full test conditions. Phone off, strictly timed.',status:''}]}];
+    if(dow===2||dow===3) return [
+      {cat:'review',subtasks:[{text:'FL Review: Go through every wrong answer',src:'Self-review + AAMC',note:'WHY were you wrong? Content gap or reasoning error?',status:''},{text:'Identify patterns across wrong answers',src:'Self-review',note:'',status:''}]},
+      {cat:'anki',subtasks:[{text:'Add FL errors to Anki deck (30-50 cards)',src:'Anki (Anking deck)',note:'',status:''}]},
+      carsGroup(),
+    ];
+    return [{cat:'pass',subtasks:[{text:'UWorld: Mixed passage set (20-30 Qs)',src:'UWorld',note:'Focus on Weakness Tracker topics.',status:''}]},dow===4?wednesdayCarsGroup():carsGroup(),ankiGroup()];
+  }
+  if(dow===1||dow===4){
+    groups.push({cat:'cr',subtasks:[{text:ka,src:'Khan Academy MCAT Course',note:'Watch and take notes. Pause and summarize each section.',status:''}]});
+    groups.push(ankiGroup());
+    if(ocperiod) groups.push({cat:'ochem',subtasks:[{text:oc,src:'Professor Eman / YouTube',note:'Align with your OChem class topic this week.',status:''}]});
+    groups.push(carsGroup());
+  } else if(dow===2){
+    const ts=ka.split(':')[1]?.trim()||'topic';
+    groups.push({cat:'cr',subtasks:[{text:ka+' - continued',src:'Khan Academy MCAT Course',note:'Finish topic or move to next sub-section.',status:''}]});
+    groups.push({cat:'pass',subtasks:[{text:'KA Passages: '+ts,src:'Khan Academy Passages',note:'2-3 passages on content reviewed this week.',status:''}]});
+    groups.push(ankiGroup());
+    groups.push(carsGroup());
+    if(ocperiod) groups.push({cat:'ochem',subtasks:[{text:oc+' - Practice Problems',src:'Professor Eman',note:'Work through Prof. Eman examples.',status:''}]});
+  } else if(dow===3){
+    const ts=ka.split(':')[1]?.trim()||'topic';
+    groups.push({cat:'pass',subtasks:[{text:'KA Passages: Mixed on '+ts,src:'Khan Academy Passages',note:'3-5 passages. Review all explanations.',status:''}]});
+    groups.push(wednesdayCarsGroup());
+    groups.push(ankiGroup());
+    if(ph.idx>=3) groups.push({cat:'pass',subtasks:[{text:'UWorld: 10 discrete Qs on weak topics',src:'UWorld',note:'Check Weakness Tracker for focus areas.',status:''}]});
+  } else if(dow===5){
+    groups.push({cat:'cr',subtasks:[{text:ka+' - reinforce and review',src:'Khan Academy MCAT Course',note:'Revisit unclear parts. Re-watch tricky videos.',status:''}]});
+    if(ocperiod) groups.push({cat:'ochem',subtasks:[{text:oc,src:'Professor Eman / YouTube',note:'Work examples. Connect to class material.',status:''}]});
+    groups.push(ankiGroup());
+    groups.push(carsGroup());
+  } else if(dow===6){
+    if(ph.idx>=3){
+      groups.push({cat:'pass',subtasks:[{text:'UWorld: 20-30 Qs (mixed)',src:'UWorld',note:'Review ALL answers, not just wrong ones.',status:''}]});
+    } else {
+      groups.push({cat:'pass',subtasks:[{text:'KA Passages: Mixed review (3-5 passages)',src:'Khan Academy Passages',note:'Mix topics from this and prior weeks.',status:''}]});
+    }
+    groups.push(carsGroup());
+    groups.push({cat:'review',subtasks:[{text:'Weekly review: What did I struggle with?',src:'Self-review',note:'Update Weakness Tracker!',status:''},{text:'Plan focus areas for next week',src:'Self-review',note:'',status:''}]});
+    groups.push(ankiGroup());
+  }
+  return groups;
+}
+
+function getDayGroups(d){ const k=dk(d); if(window.dayData[k]&&window.dayData[k].customized) return window.dayData[k].groups; return defaultGroups(d); }
+function getDayMeta(d){ const k=dk(d); if(!window.dayData[k]) window.dayData[k]={groups:null,notes:'',completed:false,customized:false}; return window.dayData[k]; }
+
+// ===== COUNTDOWN =====
+window.updateCountdown = function(){
+  const now=new Date();now.setHours(0,0,0,0);
+  const diff=Math.ceil((window.TEST-now)/86400000);
+  document.getElementById('cd-days').textContent=diff>0?diff:'Done!';
+  document.getElementById('cd-testdate').textContent=window.TEST.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+};
+
+// ===== MONTHLY =====
+window.renderMonthly = function(){
+  const y=currentMonth.getFullYear(),m=currentMonth.getMonth();
+  const MN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('month-title').textContent=`${MN[m]} ${y}`;
+  const ph=getPhase(new Date(y,m,15));
+  document.getElementById('phase-banner').innerHTML=`<h3>${ph.name}</h3><p>Click any day to view, edit, or update task status.</p>`;
+  const grid=document.getElementById('cal-grid');grid.innerHTML='';
+  ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d=>{const h=document.createElement('div');h.className='cal-header';h.textContent=d;grid.appendChild(h);});
+  const first=new Date(y,m,1);
+  const offset=(first.getDay()+6)%7;
+  for(let i=0;i<offset;i++){const e=document.createElement('div');e.className='cal-day empty';grid.appendChild(e);}
+  const dim=new Date(y,m+1,0).getDate();
+  const today=new Date();today.setHours(0,0,0,0);
+  for(let day=1;day<=dim;day++){
+    const d=new Date(y,m,day);
+    const groups=getDayGroups(d);
+    const meta=getDayMeta(d);
+    const isT=d.toDateString()===today.toDateString();
+    const ir=inRange(d);
+    const el=document.createElement('div');
+    el.className='cal-day'+(isT?' today':'')+(ir?'':' out-of-range');
+    let inner=`${meta.completed?'<span class="done-badge">Complete</span>':''}<div class="day-num">${day}${isT?'<span class="today-badge">TODAY</span>':''}</div>`;
+    if(ir){
+      const seen=new Set();
+      groups.forEach(g=>{
+        if(seen.has(g.cat)) return; seen.add(g.cat);
+        const c=CAT[g.cat];
+        const allDone=groupAllDone(g.subtasks);
+        const dotColor=groupStatusColor(g.subtasks);
+        inner+=`<div class="m-cat-tag"><div class="m-cat-dot" style="background:${dotColor}"></div><span class="m-cat-name" style="color:${allDone?'#9ca3af':c.color};${allDone?'text-decoration:line-through;':''}">${c.label}</span></div>`;
+      });
+      // OChem assignments -- due date only (no advance reminders)
+      getOchemForDate(d).forEach(a=>{
+        const short=a.name.length>18?a.name.slice(0,18)+'...':a.name;
+        const typeStyle=getOchemTypeStyle(a.type);
+        const isDone=a.tag==='done';
+        const isLate=a.tag==='overdue';
+        const dotColor=isDone?'#9ca3af':typeStyle.color;
+        const textColor=isDone?'#9ca3af':isLate?'#dc2626':typeStyle.color;
+        const bg=isDone?'#f1f5f9':isLate?'#fef2f2':typeStyle.bg;
+        const border=isDone?'#cbd5e1':isLate?'#fecaca':typeStyle.border;
+        const txt=ochemCalendarText({...a,name:short});
+        inner+=`<div class="m-cat-tag"><span class="m-cat-name" style="color:${textColor};background:${bg};border:1px solid ${border};border-radius:4px;padding:0 3px;font-weight:800;${isDone?'text-decoration:line-through;':''}">${txt}</span></div>`;
+      });
+    } else inner+='<div style="font-size:9px;color:#cbd5e1;margin-top:2px">outside range</div>';
+    inner+='<span class="edit-hint">edit</span>';
+    el.innerHTML=inner;
+    el.onclick=()=>openModal(d);
+    grid.appendChild(el);
+  }
+};
+function changeMonth(dir){currentMonth.setMonth(currentMonth.getMonth()+dir);renderMonthly();}
+
+// ===== WEEKLY =====
+function renderWeekly(){
+  const mon=new Date(currentWeekStart);
+  const sun=new Date(mon);sun.setDate(mon.getDate()+6);
+  const fmt=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  document.getElementById('week-title').textContent=`Week of ${fmt(mon)} - ${fmt(sun)}`;
+  const grid=document.getElementById('week-grid');grid.innerHTML='';
+  const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const today=new Date();today.setHours(0,0,0,0);
+
+  for(let i=0;i<7;i++){
+    const d=new Date(mon);d.setDate(mon.getDate()+i);
+    const groups=getDayGroups(d);
+    const meta=getDayMeta(d);
+    const ir=inRange(d);
+    const isT=d.toDateString()===today.toDateString();
+    const card=document.createElement('div');
+    card.className='week-card';
+    if(isT) card.style.border='2px solid #6366f1';
+
+    let html=`<div class="week-day-name">${DAYS[i]}</div><div class="week-date">${fmt(d)}${isT?'<span class="today-badge">TODAY</span>':''}</div>${meta.completed?'<div style="font-size:10px;color:#16a34a;font-weight:700;margin-bottom:5px">Day Complete</div>':''}`;
+
+    if(ir){
+      groups.forEach(g=>{
+        const c=CAT[g.cat]||CAT.cr;
+        html+=`<div class="wk-group"><div class="wk-group-header"><div class="wk-dot" style="background:${groupStatusColor(g.subtasks)}"></div><span class="wk-cat-label" style="color:${c.color}">${c.label}</span></div>`;
+        g.subtasks.forEach(s=>{
+          const isDone=s.status==='done';
+          html+=`<div class="wk-subtask"><div><span class="wk-subtask-text${isDone?' done-text':''}">${s.text}</span>${s.src&&s.src!=='--'?`<div class="wk-src">${s.src}</div>`:''} ${g.cat==='ochem'&&s.dueDate?dueBadge(s.dueDate,s.status):''}</div></div>`;
+        });
+        html+='</div>';
+      });
+
+      getOchemForDate(d).forEach(a=>{
+        const isDone=a.tag==='done';
+        const isLate=a.tag==='overdue';
+        const typeStyle=getOchemTypeStyle(a.type);
+        const dotColor=isDone?'#9ca3af':typeStyle.color;
+        const textColor=isDone?'#9ca3af':isLate?'#dc2626':typeStyle.color;
+        const txt=ochemCalendarText(a);
+        html+=`<div class="wk-subtask" style="margin-top:4px"><div><span class="wk-subtask-text${isDone?' done-text':''}" style="color:${textColor};font-weight:800">${txt}</span><div class="wk-src" style="color:${isDone?'#9ca3af':typeStyle.color};font-weight:700">${a.type}</div></div></div>`;
+      });
+    } else {
+      html+='<div style="font-size:10px;color:#cbd5e1;margin-top:8px">Outside study range</div>';
+    }
+
+    card.innerHTML=html;
+    card.onclick=()=>openModal(d);
+    grid.appendChild(card);
+  }
+}
+
+function changeWeek(dir){
+  currentWeekStart.setDate(currentWeekStart.getDate()+(dir*7));
+  renderWeekly();
+  renderTimeChart();
+}
+
+// ===== OCHEM ASSIGNMENTS =====
+const OCHEM_TYPE_STYLE = {
+  'Homework':   {color:'#2563eb',bg:'#eff6ff',border:'#bfdbfe'},
+  'Pre-lab':    {color:'#ea580c',bg:'#fff7ed',border:'#fed7aa'},
+  'Lab Report': {color:'#7c3aed',bg:'#f5f3ff',border:'#ddd6fe'},
+  'Exam':       {color:'#be123c',bg:'#fff1f2',border:'#fecdd3'},
+  'Other':      {color:'#475569',bg:'#f8fafc',border:'#cbd5e1'},
+};
+
+function getOchemTypeStyle(type){
+  return OCHEM_TYPE_STYLE[type] || OCHEM_TYPE_STYLE.Other;
+}
+
+function parseISODateLocal(value){
+  if(!value) return null;
+  const [y,m,d]=value.split('-').map(Number);
+  if(!y||!m||!d) return null;
+  const result=new Date(y,m-1,d);
+  result.setHours(0,0,0,0);
+  return result;
+}
+
+function formatISODateLocal(d){
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
+function setWeekAnchorToDate(d){
+  currentWeekStart=new Date(d);
+  currentWeekStart.setHours(0,0,0,0);
+  currentWeekStart.setDate(currentWeekStart.getDate()-((currentWeekStart.getDay()+6)%7));
+}
+
+function syncPlannerViewsToToday(force=false){
+  const today=new Date();today.setHours(0,0,0,0);
+  const todayKey=dk(today);
+  if(!force&&todayKey===lastSeenCalendarDay) return;
+  lastSeenCalendarDay=todayKey;
+  currentMonth=new Date(today.getFullYear(),today.getMonth(),1);
+  setWeekAnchorToDate(today);
+  const picker=document.getElementById('day-picker');
+  if(picker) picker.value=formatISODateLocal(today);
+  const pomoDate=document.getElementById('pomo-task-date');
+  if(pomoDate&&!pomoRunning) pomoDate.value=formatISODateLocal(today);
+  if(document.getElementById('view-monthly')?.classList.contains('active')) renderMonthly();
+  if(document.getElementById('view-weekly')?.classList.contains('active')) renderWeekly();
+  if(document.getElementById('view-daily')?.classList.contains('active')) renderDailyView();
+  if(document.getElementById('pomo-popup')?.style.display==='block'&&!pomoRunning) refreshPomoTasks();
+}
+
+function ochemStatusLabel(status){
+  return ST[status]?.label || 'Not Started';
+}
+
+function ochemCalendarText(a){
+  // Exams get a clean special label instead of "Due" / "Late" wording.
+  if(a.type==='Exam') return 'EXAM DAY';
+  if(a.tag==='done') return `${a.name} - Done`;
+  if(a.tag==='overdue') return `${a.name} - Late!`;
+  return `${a.name} - Due!`;
+}
+
+function getOchemForDate(d){
+  if(!Array.isArray(window.ochemAssignments)) return [];
+  const date=new Date(d);date.setHours(0,0,0,0);
+  const today=new Date();today.setHours(0,0,0,0);
+  const results=[];
+
+  window.ochemAssignments.forEach(a=>{
+    const due=parseISODateLocal(a.due);
+    if(!due) return;
+
+    // An assignment appears ONLY on its own due date. If that date has passed,
+    // revisiting the original date shows it as Late (unless completed).
+    if(date.getTime()!==due.getTime()) return;
+
+    const done=a.status==='done';
+    const tag=done?'done':due<today?'overdue':'due';
+    results.push({...a,tag});
+  });
+
+  return results;
+}
+
+function resetOchemForm(){
+  editingOchemIndex=null;
+  document.getElementById('oc-name').value='';
+  document.getElementById('oc-type').value='Homework';
+  document.getElementById('oc-due').value='';
+  document.getElementById('oc-status').value='';
+  const title=document.getElementById('oc-form-title');
+  const submit=document.getElementById('oc-submit-btn');
+  const cancel=document.getElementById('oc-cancel-btn');
+  if(title) title.textContent='Add OChem Assignment';
+  if(submit) submit.textContent='+ Add';
+  if(cancel) cancel.style.display='none';
+}
+
+function editOchemAssignment(i){
+  const a=window.ochemAssignments[i];
+  if(!a) return;
+  editingOchemIndex=i;
+  document.getElementById('oc-name').value=a.name||'';
+  document.getElementById('oc-type').value=a.type||'Other';
+  document.getElementById('oc-due').value=a.due||'';
+  document.getElementById('oc-status').value=a.status||'';
+  const title=document.getElementById('oc-form-title');
+  const submit=document.getElementById('oc-submit-btn');
+  const cancel=document.getElementById('oc-cancel-btn');
+  if(title) title.textContent='Edit OChem Assignment';
+  if(submit) submit.textContent='Save Changes';
+  if(cancel) cancel.style.display='inline-block';
+  document.getElementById('oc-name').focus();
+  document.getElementById('oc-form-title')?.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+function cancelOchemEdit(){
+  resetOchemForm();
+}
+
+async function addOchemAssignment(){
+  const name=document.getElementById('oc-name').value.trim();
+  const type=document.getElementById('oc-type').value;
+  const due=document.getElementById('oc-due').value;
+  const status=document.getElementById('oc-status').value;
+  if(!name){alert('Please enter an assignment name.');return;}
+  if(!due){alert('Please choose a due date.');return;}
+
+  const isEditing=editingOchemIndex!==null && !!window.ochemAssignments[editingOchemIndex];
+  if(isEditing){
+    const existing=window.ochemAssignments[editingOchemIndex];
+    window.ochemAssignments[editingOchemIndex]={...existing,name,type,due,status};
+  } else {
+    window.ochemAssignments.push({
+      id:`oc-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,
+      name,type,due,status
+    });
+  }
+
+  window.ochemAssignments.sort((a,b)=>(a.due||'').localeCompare(b.due||''));
+  resetOchemForm();
+  renderOchemTracker();renderMonthly();renderWeekly();
+  showToast(isEditing?'OChem assignment updated!':'OChem assignment added!');
+  await window.fbSaveOchem();
+}
+
+async function updateOchemStatus(i,status){
+  if(!window.ochemAssignments[i]) return;
+  window.ochemAssignments[i].status=status;
+  if(editingOchemIndex===i) document.getElementById('oc-status').value=status;
+  renderOchemTracker();renderMonthly();renderWeekly();
+  await window.fbSaveOchem();
+}
+
+async function delOchemAssignment(i){
+  if(!window.ochemAssignments[i]) return;
+  window.ochemAssignments.splice(i,1);
+  if(editingOchemIndex!==null) resetOchemForm();
+  renderOchemTracker();renderMonthly();renderWeekly();
+  await window.fbSaveOchem();
+}
+
+function renderOchemTracker(){
+  const tb=document.getElementById('ochem-tbody');
+  if(!tb) return;
+  if(!Array.isArray(window.ochemAssignments)||!window.ochemAssignments.length){
+    tb.innerHTML='<tr><td colspan="6" style="color:#9ca3af;text-align:center;padding:24px;font-size:12px">No OChem assignments yet.</td></tr>';
+    return;
+  }
+
+  const today=new Date();today.setHours(0,0,0,0);
+  tb.innerHTML=window.ochemAssignments.map((a,i)=>{
+    const due=parseISODateLocal(a.due);
+    const days=due?Math.ceil((due-today)/86400000):null;
+    const typeStyle=getOchemTypeStyle(a.type);
+    let daysText='--';
+    let daysStyle='color:#64748b';
+    if(a.status==='done') { daysText='Done'; daysStyle='color:#64748b;font-weight:700'; }
+    else if(days<0) { daysText=`${Math.abs(days)}d overdue`; daysStyle='color:#dc2626;font-weight:700'; }
+    else if(days===0) { daysText=a.type==='Exam'?'Exam day':'Due today'; daysStyle=`color:${typeStyle.color};font-weight:800`; }
+    else { daysText=`${days}d`; }
+
+    const dateText=due?due.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):a.due;
+    const doneStyle=a.status==='done'?'color:#9ca3af;text-decoration:line-through;':'';
+    return `<tr>
+      <td><b style="${doneStyle}">${a.name}</b></td>
+      <td><span style="display:inline-block;color:${a.status==='done'?'#9ca3af':typeStyle.color};background:${a.status==='done'?'#f1f5f9':typeStyle.bg};border:1px solid ${a.status==='done'?'#cbd5e1':typeStyle.border};border-radius:999px;padding:2px 8px;font-size:10px;font-weight:800;${a.status==='done'?'text-decoration:line-through;':''}">${a.type}</span></td>
+      <td style="${doneStyle}">${dateText}</td>
+      <td><select class="dv-status-sel ${stClass(a.status)}" onchange="updateOchemStatus(${i},this.value)">${Object.entries(ST).map(([k,v])=>`<option value="${k}" ${a.status===k?'selected':''}>${v.label}</option>`).join('')}</select></td>
+      <td style="${daysStyle}">${daysText}</td>
+      <td style="white-space:nowrap"><button type="button" class="oc-action-btn oc-edit-icon" onclick="editOchemAssignment(${i})" title="Edit assignment" aria-label="Edit assignment">&#9998;</button><button type="button" class="oc-action-btn oc-delete-icon" onclick="delOchemAssignment(${i})" title="Delete assignment" aria-label="Delete assignment">&times;</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ===== ICS =====
+function exportICS(){
+  const mon=new Date(currentWeekStart);
+  let ics="BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCAT Study Planner//EN\r\nCALSCALE:GREGORIAN\r\n";
+
+  const escapeICS=value=>String(value??'')
+    .replace(/\\/g,'\\\\')
+    .replace(/\n/g,'\\n')
+    .replace(/,/g,'\\,')
+    .replace(/;/g,'\\;');
+
+  for(let i=0;i<7;i++){
+    const d=new Date(mon);d.setDate(mon.getDate()+i);
+    if(!inRange(d)) continue;
+    const groups=getDayGroups(d);
+    const yy=d.getFullYear(),mm=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');
+    const dateStr=`${yy}${mm}${dd}`;
+    const nd=new Date(d);nd.setDate(d.getDate()+1);
+    const nextStr=`${nd.getFullYear()}${String(nd.getMonth()+1).padStart(2,'0')}${String(nd.getDate()).padStart(2,'0')}`;
+
+    if(groups[0]?.cat!=='off'){
+      groups.forEach(g=>{
+        const catLabel=CAT[g.cat]?.label||g.cat;
+        const descLines=g.subtasks.map(s=>{
+          let line=`- ${s.text}`;
+          if(s.src&&s.src!=='--') line+=` (${s.src})`;
+          if(s.note) line+=`\n  Tip: ${s.note}`;
+          return line;
+        }).join('\n');
+        const uid=`mcat-${dateStr}-${g.cat}-${Math.random().toString(36).slice(2)}@mcatplanner`;
+        ics+=`BEGIN:VEVENT\r\nUID:${uid}\r\nDTSTART;VALUE=DATE:${dateStr}\r\nDTEND;VALUE=DATE:${nextStr}\r\nSUMMARY:${escapeICS(catLabel)}\r\nDESCRIPTION:${escapeICS(descLines)}\r\nEND:VEVENT\r\n`;
+      });
+    }
+
+    window.ochemAssignments.forEach(a=>{
+      const due=parseISODateLocal(a.due);
+      if(due && d.getFullYear()===due.getFullYear() && d.getMonth()===due.getMonth() && d.getDate()===due.getDate() && a.status!=='done'){
+        const uid=`ochem-${dateStr}-${a.id||Math.random().toString(36).slice(2)}@mcatplanner`;
+        const today=new Date();today.setHours(0,0,0,0);
+        const tag=due<today?'overdue':'due';
+        const eventLabel=ochemCalendarText({...a,tag});
+        const desc=`Assignment: ${a.name}\nType: ${a.type}\nStatus: ${ochemStatusLabel(a.status)}`;
+        ics+=`BEGIN:VEVENT\r\nUID:${uid}\r\nDTSTART;VALUE=DATE:${dateStr}\r\nDTEND;VALUE=DATE:${nextStr}\r\nSUMMARY:${escapeICS('OChem - '+eventLabel)}\r\nDESCRIPTION:${escapeICS(desc)}\r\nEND:VEVENT\r\n`;
+      }
+    });
+  }
+
+  ics+='END:VCALENDAR\r\n';
+  const blob=new Blob([ics],{type:'text/calendar'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;
+  const fmt=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'}).replace(' ','-');
+  a.download=`MCAT-Week-${fmt(new Date(currentWeekStart))}.ics`;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  showToast('ICS file downloaded. Double-click it to add to Apple Calendar.');
+}
+
+// ===== DAILY VIEW =====
+function changeDailyDate(dir){
+  const picker=document.getElementById('day-picker');
+  let d=parseISODateLocal(picker.value);
+  if(!d){
+    d=new Date();
+    d.setHours(0,0,0,0);
+  }
+  d.setDate(d.getDate()+dir);
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  picker.value=`${y}-${m}-${day}`;
+  renderDailyView();
+}
+
+function renderDailyView(){
+  const val=document.getElementById('day-picker').value;
+  if(!val) return;
+  const [y,m,day]=val.split('-').map(Number);
+  const d=new Date(y,m-1,day);
+  const groups=getDayGroups(d);
+  const meta=getDayMeta(d);
+  const ph=getPhase(d);
+  const fmt=d=>d.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const key=dk(d);
+  // Daily pomodoro total
+  const todaySessions=window.pomodoroLog.filter(s=>s.date===key&&s.type==='focus');
+  const totalMins=todaySessions.reduce((a,s)=>a+s.duration,0);
+  const hrs=Math.floor(totalMins/60),mins=totalMins%60;
+  let html=`<div class="day-detail">
+    <h2 style="font-size:20px;font-weight:900;color:#1e1b4b">${fmt(d)}</h2>
+    <div style="font-size:12px;color:#6366f1;font-weight:700;margin-bottom:6px">${ph.name}</div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:14px;background:#f8fafc;border-radius:8px;padding:7px 12px;display:inline-block">Focused time today: <strong>${hrs}h ${mins}m</strong> (${todaySessions.length} sessions)</div>`;
+  groups.forEach((g,gi)=>{
+    const c=CAT[g.cat];
+    html+=`<div class="dv-group" style="background:${c.bg};border-left-color:${c.color}"><div class="dv-group-header" style="color:${c.color}">${c.label}</div>`;
+    g.subtasks.forEach((s,si)=>{
+      const isDone=s.status==='done';
+      const isOchemGrp=g.cat==='ochem';
+      html+=`<div class="dv-subtask-row" style="${isOchemGrp&&s.dueDate&&s.status!=='done'&&parseISODateLocal(s.dueDate)<new Date(new Date().setHours(0,0,0,0))?'background:#fef2f2;border-radius:8px;padding:4px 6px;':''}">
+        <span class="dv-subtask-text${isDone?' done-text':''}" id="dv-st-${gi}-${si}">${s.text}</span>
+        ${s.src&&s.src!=='--'?`<span class="dv-src-badge">${s.src}</span>`:''}
+        ${isOchemGrp&&s.dueDate?dueBadge(s.dueDate,s.status):''}
+        <select class="dv-status-sel ${stClass(s.status)}" onchange="updateSubtaskStatus('${key}',${gi},${si},this.value,this)">
+          ${Object.entries(ST).map(([k,v])=>`<option value="${k}" ${s.status===k?'selected':''}>${v.label}</option>`).join('')}
+        </select>
+      </div>${s.note?`<div style="font-size:10px;color:#64748b;margin-bottom:4px">Tip: ${s.note}</div>`:''}`;
+    });
+    html+='</div>';
+  });
+  html+=`<div style="margin-top:14px">
+    <label class="form-lbl">My Notes</label>
+    <textarea class="notes-area" id="dv-notes" rows="3" placeholder="What did you cover? Insights? Struggles?">${meta.notes||''}</textarea>
+    <div class="check-row">
+      <input type="checkbox" id="dv-done" ${meta.completed?'checked':''} style="accent-color:#6366f1">
+      <label for="dv-done">Mark entire day as completed</label>
+      <button onclick="saveDailyMeta('${y}','${m-1}','${day}')" style="margin-left:auto;background:#6366f1;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-weight:700;cursor:pointer;font-size:12px">Save Notes</button>
+    </div>
+  </div></div>`;
+  document.getElementById('daily-content').innerHTML=html;
+}
+
+async function updateSubtaskStatus(key,gi,si,val,sel){
+  if(!window.dayData[key]||!window.dayData[key].customized){
+    const d=parseKey(key);
+    if(!window.dayData[key]) window.dayData[key]={};
+    window.dayData[key].groups=defaultGroups(d).map(g=>({...g,subtasks:g.subtasks.map(s=>({...s}))}));
+    window.dayData[key].customized=true;
+    if(!window.dayData[key].notes) window.dayData[key].notes='';
+    if(typeof window.dayData[key].completed==='undefined') window.dayData[key].completed=false;
+  }
+  window.dayData[key].groups[gi].subtasks[si].status=val;
+  const textEl=document.getElementById(`dv-st-${gi}-${si}`);
+  if(textEl) textEl.className='dv-subtask-text'+(val==='done'?' done-text':'');
+  sel.className='dv-status-sel '+stClass(val);
+  renderMonthly();renderWeekly();updateProgress();
+  await window.fbSaveDayData(key);
+}
+
+async function saveDailyMeta(y,m,day){
+  const d=new Date(Number(y),Number(m),Number(day));
+  const k=dk(d);
+  if(!window.dayData[k]) window.dayData[k]={groups:null,notes:'',completed:false,customized:false};
+  window.dayData[k].notes=document.getElementById('dv-notes').value;
+  window.dayData[k].completed=document.getElementById('dv-done').checked;
+  showToast('Notes saved!');updateProgress();renderMonthly();renderWeekly();
+  await window.fbSaveDayData(k);
+}
+
+function openModalFromDaily(){
+  const val=document.getElementById('day-picker').value;
+  if(!val) return;
+  const [y,m,day]=val.split('-').map(Number);
+  openModal(new Date(y,m-1,day));
+}
+
+// ===== MODAL =====
+function openModal(d){
+  editingKey=dk(d);
+  const groups=getDayGroups(d);
+  const meta=getDayMeta(d);
+  const ph=getPhase(d);
+  const fmt=d=>d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  document.getElementById('m-date').textContent=fmt(d);
+  document.getElementById('m-phase').textContent=ph.name;
+  document.getElementById('m-notes').value=meta.notes||'';
+  document.getElementById('m-done').checked=meta.completed||false;
+  modalGroups=groups.map(g=>({cat:g.cat,subtasks:g.subtasks.map(s=>({...s}))}));
+  renderGroupEditors();
+  document.getElementById('modal').style.display='flex';
+}
+
+function renderGroupEditors(){
+  const list=document.getElementById('group-editor-list');list.innerHTML='';
+  modalGroups.forEach((g,gi)=>{
+    const c=CAT[g.cat]||CAT.cr;
+    const div=document.createElement('div');div.className='group-editor';div.style.borderColor=c.border;
+    let catOpts=Object.entries(CAT).map(([k,v])=>`<option value="${k}" ${k===g.cat?'selected':''}>${v.label}</option>`).join('');
+    div.innerHTML=`<div class="group-editor-header" style="background:${c.bg}">
+      <select class="group-cat-sel" style="color:${c.color};border-color:${c.border}" onchange="changeGroupCat(${gi},this.value)">${catOpts}</select>
+      <button class="remove-group-btn" onclick="removeGroup(${gi})">x</button>
+    </div><div class="subtasks-list" id="stlist-${gi}"></div>`;
+    list.appendChild(div);
+    renderSubtaskEditors(gi);
+  });
+}
+
+function dueBadge(dueDate, status){
+  if(!dueDate||status==='done') return '';
+  const today=new Date(); today.setHours(0,0,0,0);
+  const due=parseISODateLocal(dueDate);
+  if(!due) return '';
+  const diff=Math.round((due-today)/86400000);
+  if(diff<0) return `<span style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:6px;padding:1px 7px;font-size:9px;font-weight:700;white-space:nowrap">Overdue</span>`;
+  if(diff===0) return `<span style="background:#fffbeb;color:#d97706;border:1px solid #fcd34d;border-radius:6px;padding:1px 7px;font-size:9px;font-weight:700;white-space:nowrap">Due Today</span>`;
+  if(diff<=3) return `<span style="background:#fff7ed;color:#ea580c;border:1px solid #fed7aa;border-radius:6px;padding:1px 7px;font-size:9px;font-weight:700;white-space:nowrap">Due in ${diff}d</span>`;
+  return `<span style="background:#f8fafc;color:#64748b;border:1px solid #e2e8f0;border-radius:6px;padding:1px 7px;font-size:9px;font-weight:600;white-space:nowrap">Due ${due.toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>`;
+}
+
+function renderSubtaskEditors(gi){
+  const g=modalGroups[gi];
+  const isOchem=g.cat==='ochem';
+  const container=document.getElementById(`stlist-${gi}`);
+  if(!container) return;
+  container.innerHTML='';
+  g.subtasks.forEach((s,si)=>{
+    const row=document.createElement('div');
+    row.innerHTML=`
+      <div class="subtask-editor-row">
+        <select class="st-sel ${stClass(s.status)}" onchange="modalGroups[${gi}].subtasks[${si}].status=this.value;this.className='st-sel '+getStClass(this.value)">
+          ${Object.entries(ST).map(([k,v])=>`<option value="${k}" ${s.status===k?'selected':''}>${v.label}</option>`).join('')}
+        </select>
+        <input class="subtask-inp" value="${s.text||''}" placeholder="Sub-task or topic..." oninput="modalGroups[${gi}].subtasks[${si}].text=this.value">
+        <input class="subtask-src-inp" value="${s.src||''}" placeholder="Source..." oninput="modalGroups[${gi}].subtasks[${si}].src=this.value">
+        <button type="button" class="move-st-btn" onclick="toggleMovePicker(${gi},${si})" title="Move to another day" aria-label="Move task to another day">&#128197;</button>
+        <button type="button" class="remove-st-btn" onclick="removeSubtask(${gi},${si})" title="Delete sub-task" aria-label="Delete sub-task">x</button>
+      </div>
+      <div class="move-picker-row" id="move-picker-${gi}-${si}">
+        <label for="move-date-${gi}-${si}">Move to:</label>
+        <input type="date" id="move-date-${gi}-${si}">
+        <button type="button" class="move-confirm-btn" onclick="moveSubtaskToDate(${gi},${si},'${g.cat}')">Move Task</button>
+        <button type="button" class="move-cancel-btn" onclick="toggleMovePicker(${gi},${si},false)" title="Cancel" aria-label="Cancel move">&times;</button>
+      </div>
+      ${isOchem?`
+      <div class="subtask-editor-row" style="margin-top:-2px;padding-left:78px;align-items:center;gap:6px">
+        <label style="font-size:10px;color:#7c3aed;font-weight:700;white-space:nowrap">Due Date:</label>
+        <input type="date" style="flex:1;padding:4px 8px;border-radius:7px;border:1.5px solid #ddd6fe;font-size:11px;font-family:inherit;outline:none;color:#374151" value="${s.dueDate||''}" oninput="modalGroups[${gi}].subtasks[${si}].dueDate=this.value">
+        <div style="width:20px;flex-shrink:0"></div>
+      </div>`:''}
+      <div class="subtask-editor-row" style="margin-top:-2px;padding-left:78px">
+        <input class="subtask-note-inp" style="flex:1" value="${s.note||''}" placeholder="Optional tip/note..." oninput="modalGroups[${gi}].subtasks[${si}].note=this.value">
+        <div style="width:20px;flex-shrink:0"></div>
+      </div>`;
+    container.appendChild(row);
+  });
+  const addBtn=document.createElement('button');
+  addBtn.className='add-subtask-btn';addBtn.textContent='+ Add sub-task';
+  addBtn.onclick=()=>addSubtask(gi);
+  container.appendChild(addBtn);
+}
+
+function changeGroupCat(gi,val){ modalGroups[gi].cat=val; renderGroupEditors(); }
+function removeGroup(gi){ modalGroups.splice(gi,1); renderGroupEditors(); }
+function addGroupEditor(){ modalGroups.push({cat:'cr',subtasks:[{text:'',src:'Khan Academy',note:'',status:''}]}); renderGroupEditors(); document.getElementById('group-editor-list').lastChild?.scrollIntoView({behavior:'smooth'}); }
+function removeSubtask(gi,si){ modalGroups[gi].subtasks.splice(si,1); renderSubtaskEditors(gi); }
+function addSubtask(gi){ modalGroups[gi].subtasks.push({text:'',src:'',note:'',status:''}); renderSubtaskEditors(gi); }
+
+function toggleMovePicker(gi,si,forceOpen){
+  const panel=document.getElementById(`move-picker-${gi}-${si}`);
+  if(!panel) return;
+  const isOpen=panel.style.display==='flex';
+  const shouldOpen=typeof forceOpen==='boolean'?forceOpen:!isOpen;
+  document.querySelectorAll('.move-picker-row').forEach(el=>{el.style.display='none';});
+  if(!shouldOpen) return;
+  panel.style.display='flex';
+  const input=document.getElementById(`move-date-${gi}-${si}`);
+  if(input){
+    input.focus();
+    if(typeof input.showPicker==='function'){
+      try{input.showPicker();}catch(e){}
+    }
+  }
+}
+
+async function moveSubtaskToDate(gi,si,sourceCatArg){
+  const group=modalGroups[gi];
+  const task=group?.subtasks?.[si];
+  const input=document.getElementById(`move-date-${gi}-${si}`);
+  if(!group||!task||!input) return;
+
+  const destDate=parseISODateLocal(input.value);
+  if(!destDate){ alert('Choose the day you want to move this task to.'); return; }
+  if(!inRange(destDate)){ alert('Please choose a date within your MCAT study-plan range.'); return; }
+
+  const destKey=dk(destDate);
+  if(destKey===editingKey){ showToast('That task is already on this day.'); return; }
+
+  const sourceCat=(sourceCatArg&&CAT[sourceCatArg])?sourceCatArg:group.cat;
+  const movedTask={...task};
+
+  // Remove it from the day currently open in the editor.
+  group.subtasks.splice(si,1);
+  if(group.subtasks.length===0) modalGroups.splice(gi,1);
+
+  // Save the current day's edited state immediately so the move cannot be lost.
+  if(!window.dayData[editingKey]) window.dayData[editingKey]={};
+  window.dayData[editingKey].groups=modalGroups.map(g=>({...g,subtasks:g.subtasks.map(st=>({...st}))}));
+  window.dayData[editingKey].notes=document.getElementById('m-notes').value;
+  window.dayData[editingKey].completed=document.getElementById('m-done').checked;
+  window.dayData[editingKey].customized=true;
+
+  // Start from the destination day's saved custom groups, or its normal default plan.
+  const existingDest=window.dayData[destKey]||{};
+  let destGroups;
+  if(existingDest.customized&&Array.isArray(existingDest.groups)){
+    destGroups=existingDest.groups.map(g=>({...g,subtasks:(g.subtasks||[]).map(st=>({...st}))}));
+  } else {
+    destGroups=defaultGroups(destDate).map(g=>({...g,subtasks:g.subtasks.map(st=>({...st}))}));
+  }
+
+  // If the destination was a Rest Day, replace the Rest Day placeholder when adding real work.
+  if(sourceCat!=='off'&&destGroups.length===1&&destGroups[0]?.cat==='off') destGroups=[];
+
+  const targetGroup=destGroups.find(g=>g.cat===sourceCat);
+  if(targetGroup) targetGroup.subtasks.push(movedTask);
+  else destGroups.push({cat:sourceCat,subtasks:[movedTask]});
+
+  window.dayData[destKey]={
+    ...existingDest,
+    groups:destGroups,
+    notes:existingDest.notes||'',
+    completed:movedTask.status==='done'?(typeof existingDest.completed==='boolean'?existingDest.completed:false):false,
+    customized:true
+  };
+
+  renderGroupEditors();
+  renderMonthly();renderWeekly();updateProgress();
+  if(document.getElementById('view-daily').classList.contains('active')) renderDailyView();
+
+  const label=destDate.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+  showToast(`Task moved to ${label}`);
+  await Promise.all([window.fbSaveDayData(editingKey),window.fbSaveDayData(destKey)]);
+}
+
+async function saveModal(){
+  const k=editingKey;
+  if(!window.dayData[k]) window.dayData[k]={};
+  window.dayData[k].groups=modalGroups.map(g=>({...g,subtasks:g.subtasks.map(s=>({...s}))}));
+  window.dayData[k].notes=document.getElementById('m-notes').value;
+  window.dayData[k].completed=document.getElementById('m-done').checked;
+  window.dayData[k].customized=true;
+  closeModal();
+  renderMonthly();renderWeekly();updateProgress();
+  if(document.getElementById('view-daily').classList.contains('active')) renderDailyView();
+  showToast('Day saved!');
+  await window.fbSaveDayData(k);
+}
+function closeModal(){ document.getElementById('modal').style.display='none'; editingKey=null; }
+document.getElementById('modal').addEventListener('click',e=>{ if(e.target.id==='modal') closeModal(); });
+
+// ===== SETTINGS =====
+function openSettings(){ document.getElementById('settings-popup').classList.add('open'); document.getElementById('settings-overlay').classList.add('open'); }
+function closeSettings(){ document.getElementById('settings-popup').classList.remove('open'); document.getElementById('settings-overlay').classList.remove('open'); }
+async function applySettings(){
+  const s=document.getElementById('set-start').value;
+  const e=document.getElementById('set-end').value;
+  if(!s||!e){alert('Please enter both dates.');return;}
+  const ns=parseISODateLocal(s),ne=parseISODateLocal(e);
+  if(!ns||!ne){alert('Please enter valid dates.');return;}
+  if(ne<=ns){alert('Test date must be after start date.');return;}
+  window.START=ns;window.TEST=ne;
+  syncPlannerViewsToToday(true);
+  updateCountdown();renderMonthly();renderWeekly();updateProgress();
+  closeSettings();showToast('Plan updated!');
+  await window.fbSaveSettings(s,e);
+}
+
+// ===== PROGRESS =====
+window.updateProgress = function(){
+  const cats=Object.keys(CAT);
+  const cc={};cats.forEach(c=>cc[c]={total:0,done:0});
+  const PHASE_NAMES=["Phase 1: KA Foundations - Bio and Biochem","Phase 2: KA Foundations - Chem and Physics","Phase 3: KA Foundations - Psych/Soc and OChem","Phase 4: Passages, UWorld and AAMC Banks","Phase 5: Full Lengths and Deep Review"];
+  const PHASE_COLORS=["#6366f1","#0891b2","#7c3aed","#16a34a","#be185d"];
+  const pc={};PHASE_NAMES.forEach(p=>pc[p]={total:0,done:0});
+  let total=0,done=0;
+  for(let d=new Date(window.START);d<=window.TEST;d.setDate(d.getDate()+1)){
+    const dd=new Date(d);
+    const groups=getDayGroups(dd);
+    if(!groups.length||groups[0]?.cat==='off') continue;
+    total++;
+    const meta=getDayMeta(dd);
+    const ph=getPhase(dd);
+    if(!pc[ph.name]) pc[ph.name]={total:0,done:0};
+    pc[ph.name].total++;
+    if(meta.completed){done++;pc[ph.name].done++;}
+    const seen=new Set();
+    groups.forEach(g=>{if(!seen.has(g.cat)){seen.add(g.cat);if(cc[g.cat]){cc[g.cat].total++;if(meta.completed)cc[g.cat].done++;}}});
+  }
+  const pct=total?Math.round(done/total*100):0;
+  document.getElementById('prog-label').textContent=`${done} / ${total} study days completed`;
+  document.getElementById('prog-pct').textContent=pct+'%';
+  document.getElementById('big-fill').style.width=pct+'%';
+  const fmtD=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  document.getElementById('prog-range').textContent=`${fmtD(window.START)} to ${fmtD(window.TEST)}`;
+  const cg=document.getElementById('prog-cat-grid');cg.innerHTML='';
+  cats.filter(c=>c!=='off').forEach(c=>{
+    const cv=CAT[c],ct=cc[c];const p=ct.total?Math.round(ct.done/ct.total*100):0;
+    cg.innerHTML+=`<div class="prog-card"><h4 style="color:${cv.color};font-size:12px;font-weight:800;margin-bottom:7px">${cv.label}</h4><div class="prog-bar-bg"><div class="prog-bar-fill" style="width:${p}%;background:${cv.color}"></div></div><div style="font-size:10px;color:#9ca3af">${ct.done}/${ct.total} days - ${p}%</div></div>`;
+  });
+  const pp=document.getElementById('phase-prog');pp.innerHTML='';
+  PHASE_NAMES.forEach((pn,i)=>{
+    const pv=pc[pn]||{total:0,done:0};const p=pv.total?Math.round(pv.done/pv.total*100):0;const col=PHASE_COLORS[i];
+    pp.innerHTML+=`<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:4px"><span>${pn}</span><span style="color:${col}">${p}%</span></div><div style="height:10px;border-radius:8px;background:#e2e8f0;overflow:hidden"><div style="height:100%;width:${p}%;background:${col};border-radius:8px;transition:width .5s"></div></div><div style="font-size:10px;color:#9ca3af;margin-top:2px">${pv.done}/${pv.total} study days</div></div>`;
+  });
+  renderTimeChart();
+};
+
+// ===== TIME CHART =====
+window.renderTimeChart = function(){
+  const mon=new Date(currentWeekStart);
+  const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const chart=document.getElementById('time-chart');
+  if(!chart) return;
+  chart.innerHTML='';
+  let maxH=0;
+  const data=[];
+  for(let i=0;i<7;i++){
+    const d=new Date(mon);d.setDate(mon.getDate()+i);
+    const key=dk(d);
+    const sessions=window.pomodoroLog.filter(s=>s.date===key&&s.type==='focus');
+    const mins=sessions.reduce((a,s)=>a+s.duration,0);
+    const hrs=Math.round(mins/60*10)/10;
+    data.push({label:DAYS[i],hrs});
+    if(hrs>maxH) maxH=hrs;
+  }
+  if(maxH===0) maxH=2;
+  data.forEach(d=>{
+    const pct=d.hrs/maxH;
+    chart.innerHTML+=`<div class="chart-bar-wrap">
+      <div class="chart-bar-val">${d.hrs>0?d.hrs+'h':''}</div>
+      <div class="chart-bar" style="height:${Math.max(pct*100,d.hrs>0?4:1)}px;background:#6366f1"></div>
+      <div class="chart-bar-label">${d.label}</div>
+    </div>`;
+  });
+};
+
+// ===== WEAKNESS =====
+async function addWeakness(){
+  const t=document.getElementById('w-topic').value.trim();
+  if(!t){alert('Please enter a topic!');return;}
+  window.weaknesses.push({sec:document.getElementById('w-section').value,topic:t,sev:document.getElementById('w-sev').value,src:document.getElementById('w-src').value.trim()||'--',date:document.getElementById('w-date').value||new Date().toISOString().slice(0,10),status:'In Progress'});
+  document.getElementById('w-topic').value='';document.getElementById('w-src').value='';
+  renderWeaknesses();
+  await window.fbSaveWeaknesses();
+}
+async function delWeakness(i){window.weaknesses.splice(i,1);renderWeaknesses();await window.fbSaveWeaknesses();}
+async function toggleWStatus(i){window.weaknesses[i].status=window.weaknesses[i].status==='Resolved'?'In Progress':'Resolved';renderWeaknesses();await window.fbSaveWeaknesses();}
+window.renderWeaknesses = function(){
+  const tb=document.getElementById('weak-tbody');
+  if(!window.weaknesses.length){tb.innerHTML='<tr><td colspan="7" style="color:#9ca3af;text-align:center;padding:24px;font-size:12px">No weaknesses logged yet. Take some practice and come back!</td></tr>';return;}
+  tb.innerHTML=window.weaknesses.map((w,i)=>{
+    const sc=w.sev==='h'?'sev-h':w.sev==='m'?'sev-m':'sev-l';
+    const sl=w.sev==='h'?'High':w.sev==='m'?'Medium':'Low';
+    return `<tr><td><b>${w.sec}</b></td><td>${w.topic}</td><td><span class="sev-badge ${sc}">${sl}</span></td><td>${w.src}</td><td>${w.date}</td><td><button onclick="toggleWStatus(${i})" style="border:1px solid #e2e8f0;border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;background:#fff">${w.status}</button></td><td><button class="del-btn" onclick="delWeakness(${i})">X</button></td></tr>`;
+  }).join('');
+};
+
+// ===== WEAKNESS DROPDOWN =====
+function populateWeaknessDropdown(){
+  const sel=document.getElementById('ll-link');
+  const current=sel.value;
+  sel.innerHTML='<option value="">-- None --</option>';
+  if(!window.weaknesses.length){
+    sel.innerHTML+='<option disabled>No weaknesses logged yet</option>';
+  } else {
+    window.weaknesses.forEach(w=>{
+      const label=`[${w.sec}] ${w.topic}`;
+      sel.innerHTML+=`<option value="${label}" ${current===label?'selected':''}>${label}</option>`;
+    });
+  }
+}
+
+// ===== LESSONS =====
+async function addLesson(){
+  const wrong=document.getElementById('ll-wrong').value.trim();
+  const right=document.getElementById('ll-right').value.trim();
+  if(!wrong&&!right){alert('Please enter at least what went wrong or what you learned.');return;}
+  window.lessons.unshift({
+    date:document.getElementById('ll-date').value||new Date().toISOString().slice(0,10),
+    cat:document.getElementById('ll-cat').value,
+    src:document.getElementById('ll-src').value.trim()||'--',
+    link:document.getElementById('ll-link').value.trim(),
+    wrong,right,
+    strategy:document.getElementById('ll-strategy').value.trim(),
+  });
+  ['ll-wrong','ll-right','ll-strategy','ll-src','ll-link'].forEach(id=>document.getElementById(id).value='');
+  renderLessons();showToast('Lesson logged!');
+  await window.fbSaveLessons();
+}
+async function delLesson(i){window.lessons.splice(i,1);renderLessons();await window.fbSaveLessons();}
+window.renderLessons = function(){
+  const list=document.getElementById('ll-list');
+  if(!window.lessons.length){list.innerHTML='<div style="color:#9ca3af;text-align:center;padding:30px;font-size:13px">No lessons logged yet. Start practicing and log your insights here!</div>';return;}
+  list.innerHTML=window.lessons.map((l,i)=>{
+    const lc=LL_CATS[l.cat]||LL_CATS.strategy;
+    return `<div class="ll-entry" style="border-left-color:${lc.color}">
+      <div class="ll-meta">
+        <span style="font-size:11px;color:#64748b;font-weight:700">${l.date}</span>
+        <span class="ll-cat-badge" style="color:${lc.color};background:${lc.bg};border-color:${lc.border}">${lc.label}</span>
+        ${l.src&&l.src!=='--'?`<span style="font-size:10px;color:#9ca3af">${l.src}</span>`:''}
+        ${l.link?`<span style="font-size:10px;color:#6366f1;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;padding:1px 7px">Linked: ${l.link}</span>`:''}
+        <button class="del-btn" onclick="delLesson(${i})" style="margin-left:auto">X</button>
+      </div>
+      ${l.wrong?`<div class="ll-section"><div class="ll-section-label">What went wrong</div><div class="ll-section-text">${l.wrong}</div></div>`:''}
+      ${l.right?`<div class="ll-section"><div class="ll-section-label">Correct reasoning</div><div class="ll-section-text">${l.right}</div></div>`:''}
+      ${l.strategy?`<div class="ll-strategy"><strong>Strategy:</strong> ${l.strategy}</div>`:''}
+    </div>`;
+  }).join('');
+};
+
+// ===== POMODORO =====
+let pomoInterval=null;
+let pomoRunning=false;
+let pomoMode='focus';
+let pomoSecondsLeft=25*60;
+let pomoTotalSeconds=25*60;
+let pomoRound=1;
+const pomoMaxRounds=4;
+let pomoFocusMin=25,pomoShortMin=5,pomoLongMin=15;
+let activePomoTask=null;
+window.pomoTaskOptions=[];
+
+function getPomoTaskSelection(){
+  const sel=document.getElementById('pomo-task-select');
+  const idx=sel&&sel.value!==''?Number(sel.value):-1;
+  const item=Number.isInteger(idx)&&idx>=0?window.pomoTaskOptions[idx]:null;
+  const taskDate=document.getElementById('pomo-task-date')?.value||formatISODateLocal(new Date());
+  return item?{...item,taskDate}:{cat:'review',text:'General focus',taskDate};
+}
+
+function refreshPomoTasks(){
+  const dateInput=document.getElementById('pomo-task-date');
+  const sel=document.getElementById('pomo-task-select');
+  const note=document.getElementById('pomo-task-note');
+  if(!dateInput||!sel) return;
+  if(!dateInput.value) dateInput.value=formatISODateLocal(new Date());
+  const d=parseISODateLocal(dateInput.value);
+  if(!d) return;
+
+  const previousText=window.pomoTaskOptions[Number(sel.value)]?.text||'';
+  const options=[];
+  getDayGroups(d).forEach(g=>{
+    if(g.cat==='off') return;
+    (g.subtasks||[]).forEach(st=>{
+      if(!st.text?.trim()) return;
+      options.push({cat:g.cat,text:st.text.trim(),status:st.status||'',source:st.src||'',origin:'planner'});
+    });
+  });
+  getOchemForDate(d).forEach(a=>{
+    options.push({cat:'ochem',text:a.type==='Exam'?`${a.name} — EXAM DAY`:a.name,status:a.status||'',source:a.type,origin:'ochem-tracker'});
+  });
+  window.pomoTaskOptions=options;
+
+  if(!options.length){
+    sel.innerHTML='<option value="">General focus — no scheduled tasks</option>';
+    if(note) note.textContent='No planner tasks on this date. You can still run a general focus session.';
+    return;
+  }
+  sel.innerHTML=options.map((item,i)=>{
+    const c=CAT[item.cat]?.label||item.cat;
+    const done=item.status==='done'?' ?':'';
+    return `<option value="${i}">${c}: ${item.text}${done}</option>`;
+  }).join('');
+  const restoreIndex=options.findIndex(x=>x.text===previousText);
+  sel.value=String(restoreIndex>=0?restoreIndex:0);
+  if(note) note.textContent=`${options.length} task${options.length===1?'':'s'} scheduled for ${d.toLocaleDateString('en-US',{month:'short',day:'numeric'})}.`;
+}
+
+function setPomoTaskControlsDisabled(disabled){
+  const d=document.getElementById('pomo-task-date');
+  const s=document.getElementById('pomo-task-select');
+  if(d) d.disabled=disabled;
+  if(s) s.disabled=disabled;
+}
+
+function togglePomo(){
+  const p=document.getElementById('pomo-popup');
+  const opening=p.style.display!=='block';
+  p.style.display=opening?'block':'none';
+  if(opening){
+    const dateInput=document.getElementById('pomo-task-date');
+    if(dateInput&&!dateInput.value) dateInput.value=formatISODateLocal(new Date());
+    refreshPomoTasks();
+    updatePomoDisplay();
+  }
+}
+
+function updatePomoSettings(){
+  pomoFocusMin=parseInt(document.getElementById('pomo-focus-min').value)||25;
+  pomoShortMin=parseInt(document.getElementById('pomo-short-min').value)||5;
+  pomoLongMin=parseInt(document.getElementById('pomo-long-min').value)||15;
+  if(!pomoRunning&&pomoSecondsLeft===pomoTotalSeconds){
+    setPomoDurationForMode();
+    updatePomoDisplay();
+  }
+}
+
+function setPomoDurationForMode(){
+  if(pomoMode==='focus') pomoSecondsLeft=pomoFocusMin*60;
+  else if(pomoMode==='short') pomoSecondsLeft=pomoShortMin*60;
+  else pomoSecondsLeft=pomoLongMin*60;
+  pomoTotalSeconds=pomoSecondsLeft;
+}
+
+function togglePomoTimer(){
+  if(pomoRunning){
+    clearInterval(pomoInterval);pomoRunning=false;
+    document.getElementById('pomo-start-btn').textContent='Resume';
+    return;
+  }
+
+  if(pomoMode==='focus'&&!activePomoTask) activePomoTask=getPomoTaskSelection();
+  if(pomoMode==='focus') setPomoTaskControlsDisabled(true);
+  pomoRunning=true;
+  document.getElementById('pomo-start-btn').textContent='Pause';
+  pomoInterval=setInterval(()=>{
+    pomoSecondsLeft--;
+    updatePomoDisplay();
+    if(pomoSecondsLeft<=0){
+      clearInterval(pomoInterval);pomoRunning=false;
+      finishPomoPhase();
+    }
+  },1000);
+}
+
+async function finishPomoPhase(){
+  const savePromise=logPomoSession();
+  if(pomoMode==='focus'){
+    activePomoTask=null;
+    setPomoTaskControlsDisabled(false);
+    if(pomoRound>=pomoMaxRounds) switchPomoMode('long');
+    else switchPomoMode('short');
+  } else {
+    if(pomoMode==='long') pomoRound=1;
+    else pomoRound=Math.min(pomoMaxRounds,pomoRound+1);
+    switchPomoMode('focus');
+  }
+  await savePromise;
+}
+
+function switchPomoMode(mode){
+  pomoMode=mode;
+  setPomoDurationForMode();
+  document.getElementById('pomo-start-btn').textContent='Start';
+  setPomoTaskControlsDisabled(false);
+  updatePomoDisplay();
+  if(mode==='focus') refreshPomoTasks();
+  showToast(mode==='focus'?`Round ${pomoRound} ready`:mode==='short'?`${pomoShortMin}-minute break ready`:`${pomoLongMin}-minute long break ready`);
+}
+
+function resetPomo(){
+  clearInterval(pomoInterval);pomoRunning=false;
+  activePomoTask=null;
+  setPomoDurationForMode();
+  document.getElementById('pomo-start-btn').textContent='Start';
+  setPomoTaskControlsDisabled(false);
+  updatePomoDisplay();
+}
+
+function updatePomoDisplay(){
+  const m=Math.floor(Math.max(0,pomoSecondsLeft)/60);
+  const s=Math.max(0,pomoSecondsLeft)%60;
+  const time=document.getElementById('pomo-time');
+  const round=document.getElementById('pomo-round');
+  const phase=document.getElementById('pomo-phase');
+  if(time) time.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  if(phase) phase.textContent=pomoMode==='focus'?'Focus':pomoMode==='short'?'Short break':'Long break';
+  if(round){
+    if(pomoMode==='focus') round.textContent=`Round ${pomoRound} of ${pomoMaxRounds}`;
+    else if(pomoMode==='short') round.textContent=`Break after round ${pomoRound}`;
+    else round.textContent='4 rounds complete';
+  }
+  const pct=pomoTotalSeconds?((pomoTotalSeconds-pomoSecondsLeft)/pomoTotalSeconds)*100:0;
+  const fill=document.getElementById('pomo-prog-fill');
+  if(fill) fill.style.width=Math.max(0,Math.min(100,pct))+'%';
+}
+
+async function logPomoSession(){
+  const actualDate=new Date();
+  const sessionKey=dk(actualDate);
+  const duration=pomoMode==='focus'?pomoFocusMin:pomoMode==='short'?pomoShortMin:pomoLongMin;
+  const task=pomoMode==='focus'?(activePomoTask||getPomoTaskSelection()):null;
+  const cat=task?.cat||'review';
+  window.pomodoroLog.push({
+    date:sessionKey,
+    taskDate:task?.taskDate||'',
+    taskText:task?.text||'',
+    type:pomoMode,
+    cat,
+    duration,
+    round:pomoRound,
+    time:actualDate.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})
+  });
+  renderPomoLog();renderTimeChart();
+  if(document.getElementById('view-daily').classList.contains('active')) renderDailyView();
+  await window.fbSavePomodoroLog();
+}
+
+window.renderPomoLog = function(){
+  const today=dk(new Date());
+  const todaySessions=window.pomodoroLog.filter(s=>s.date===today).slice(-8).reverse();
+  const items=document.getElementById('pomo-log-items');
+  if(!items) return;
+  if(!todaySessions.length){items.innerHTML='<div style="font-size:10px;color:rgba(255,255,255,.4)">No sessions yet.</div>';return;}
+  items.innerHTML=todaySessions.map(s=>{
+    const label=s.type==='focus'?(s.taskText||CAT[s.cat]?.label||'Focus'):s.type==='long'?'Long break':'Short break';
+    return `<div class="pomo-log-item"><span>${s.time} - ${label}</span><span>${s.duration}min</span></div>`;
+  }).join('');
+};
+
+// ===== VIEWS =====
+function showView(v,btn){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  btn.classList.add('active');
+  if(v==='monthly') renderMonthly();
+  if(v==='weekly') renderWeekly();
+  if(v==='daily') renderDailyView();
+  if(v==='progress') updateProgress();
+  if(v==='weakness') renderWeaknesses();
+  if(v==='ochem'){renderOchemTracker();}
+  if(v==='lessons') renderLessons();
+}
+
+// Explicitly expose renderers used by the Firebase module
+window.renderOchemTracker = renderOchemTracker;
+
+// ===== TOAST =====
+function showToast(msg){
+  let t=document.getElementById('toast');
+  if(!t){t=document.createElement('div');t.id='toast';t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e1b4b;color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.2);transition:opacity .3s';document.body.appendChild(t);}
+  t.textContent=msg;t.style.opacity='1';clearTimeout(t._t);
+  t._t=setTimeout(()=>t.style.opacity='0',2500);
+}
+
+// ===== INIT =====
+const initNow=new Date();initNow.setHours(0,0,0,0);
+document.getElementById('w-date').value=formatISODateLocal(initNow);
+document.getElementById('ll-date').value=formatISODateLocal(initNow);
+document.getElementById('day-picker').value=formatISODateLocal(initNow);
+document.getElementById('pomo-task-date').value=formatISODateLocal(initNow);
+syncPlannerViewsToToday(true);
+refreshPomoTasks();
+updatePomoDisplay();
+updateCountdown();setInterval(updateCountdown,60000);
+renderMonthly();updateProgress();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden) syncPlannerViewsToToday(false);});
+window.addEventListener('focus',()=>syncPlannerViewsToToday(false));
+</script>
+</body>
+</html>
